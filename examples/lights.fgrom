@@ -1,0 +1,37 @@
+@title: FragRoom Example: Lights //Application special option. See examples/options
+
+#version 330 core
+out vec4 fragColor;
+  
+in vec2 fragCoord; // the input variable from the vertex shader (same name and same type)  
+uniform float iTime; //Time, in seconds
+uniform vec2 iResolution; //Resolution of display in pixels
+
+vec3 palette(in float t){ //RGB palette in function of time
+	float r = sin(t) * 0.5 + 0.5; //map the sine function to [0,1]
+	float g = sin(t + 2.0*3.14*0.333) * 0.5 + 0.5; //map the sine function to [0,1] and introduces 120 degree phase
+	float b = sin(t + 2.0*3.14*0.666) * 0.5 + 0.5; //map the sine function to [0,1] and introduces 240 degree phase
+	
+	return vec3(r, g, b);
+}
+
+void main(){
+    vec2 uv = fragCoord;
+	uv.x *= iResolution.x/iResolution.y; //Fix the aspect ratio
+    
+    uv.x *= sin(uv.y + iTime); //Change the coordinates in value of sine waves
+    uv.y *= sin(uv.x + iTime);
+    
+    float d = length(uv); //Distance to 0,0 of the transformed coords
+    
+    vec3 col = palette(d + 0.2*iTime); //calculate color from rgb palette
+    
+    d = sin(10.0*d + 0.7*iTime)/10.0; //Transform d
+    d = abs(d); //Get only the edges. If you comment this line you get cool effects too...
+    
+    
+    d = 0.02 / d; //Make it close to either 0 or 1
+    col *= d; //multiply the color by it
+    
+    fragColor = vec4(col, 1.0); // Output to screen
+}

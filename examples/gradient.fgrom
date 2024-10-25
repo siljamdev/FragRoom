@@ -1,0 +1,15 @@
+@title: FragRoom Example: Gradient //Application special option. See examples/options
+
+#version 330 core
+out vec4 fragColor;
+  
+in vec2 fragCoord; // the input variable from the vertex shader (same name and same type)  
+uniform float iTime; //Time, in seconds
+
+void main(){
+	vec2 coordinates = fragCoord;
+	coordinates *= 0.5; //Transform the coordinates so the center is in the corner
+	coordinates += 0.5;
+	
+    fragColor = vec4(coordinates.x, coordinates.y, 0.0, 1.0); //output a red-green gradient
+}

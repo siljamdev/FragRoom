@@ -1,0 +1,49 @@
+@title: FragRoom Example: Hypnosis! //Application special option. See examples/options
+
+#version 330 core
+out vec4 fragColor;
+  
+in vec2 fragCoord; // the input variable from the vertex shader (same name and same type)  
+uniform float iTime; //Time, in seconds
+uniform vec2 iResolution; //Resolution of display in pixels
+
+//I wont even try to explain this one, I made it a long time ago...
+void main(){
+    // Normalized pixel coordinates (from -1 to 1)
+    vec2 uv = fragCoord;
+	uv.x *= iResolution.x/iResolution.y; //Fix the aspect ratio
+    
+    //Move the center
+    vec2 transform = vec2(0.5*sin(iTime), 0.5*cos(iTime)); 
+    uv = transform + uv;
+    
+    //Angle at wich the square will be rotated
+    float angle = 3.0*sin(0.4*iTime);
+    
+    //Matrix needed for rotation
+    mat2 rm = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
+    
+    uv = rm * uv;
+    
+    vec3 col = vec3(0.0);
+    
+    //f is distance(square)
+    vec2 c = abs(uv)-2.0;
+    float f = length(max(c,0.0)) + min(max(c.x,c.y),0.0);
+    
+    float d = 0.2*iTime + f;
+    
+    //For getting the colors
+    float e = mod(10.0*d, 3.0);
+    
+    if(e < 1.0){
+        col = vec3(0.9);
+    } else if(e < 2.0){
+        col = vec3(0.7 + 0.3*uv.y*cos(0.9*iTime), 0.0, 0.85 + 0.3*uv.x*sin(iTime));
+    } else{
+        col = vec3(0.2*uv.y*sin(0.7*iTime), 0.2*uv.x*sin(iTime), 0.2*uv.x*cos(1.1*iTime));
+    }
+    
+    // Output to screen
+    fragColor = vec4(col, 1.0);
+}

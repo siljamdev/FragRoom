@@ -128,6 +128,7 @@ class Room : GameWindow{
 			line = line.Split("//")[0];
 			string[] words = line.Split(":");
 			string arg = string.Join(":", words.Skip(1)).TrimStart();
+			words[1] = words[1].Trim();
 			switch(words[0].TrimEnd()){
 				case "@title":
 				this.Title = replaceValues(arg);

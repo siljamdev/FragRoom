@@ -1,0 +1,19 @@
+@title: FragRoom Example: Squares //Application special option. See examples/options
+
+#version 330 core
+out vec4 fragColor;
+  
+in vec2 fragCoord; // the input variable from the vertex shader (same name and same type)  
+uniform float iTime; //Time, in seconds
+uniform vec2 iResolution; //Resolution, in pixels
+
+void main(){   
+    vec2 pixs = vec2(16.0); //Square size, in pixels
+    vec2 sqn = iResolution.xy/pixs; //Number of squares
+    
+    vec2 corner = fragCoord/2.0+0.5; //Coordinates, with the corner in the bottom left
+    vec2 square = vec2(floor(corner.x*sqn.x),floor(corner.y*sqn.y)); //Coordinates, made into the bigger squares
+    
+    vec3 col = vec3(sin(square.x-8.0*iTime-square.y*square.y),cos(square.y+8.0*iTime+square.x*square.x),0.0); //Calcultae the color
+    fragColor = vec4(col, 1.0); //output
+}
