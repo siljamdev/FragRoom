@@ -1,5 +1,5 @@
 # FragRoom
-![Icon of the application](res/icon.png)
+![Icon of the application](res/githubBigIcon.png)
 
 Application to run GLSL fragment shaders
 
