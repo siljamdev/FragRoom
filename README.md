@@ -35,6 +35,7 @@ These are all the options:
 |grabCursor|0 or 1|If the cursor will be grabbed by the application or not. Default is not|
 |maxFps|non-negative number|The maximum fps. Default is 144|
 |icon|file path|The path to the **.ico** file that will be used as icon. Default is the normal app icon|
+
 You can find examples [here](./examples/options).
 
 These are the special sequences for the title:
@@ -44,4 +45,5 @@ These are the special sequences for the title:
 |%f|Name of the shader file, with extension|
 |%n|Name of the shader file, without extension|
 |%d|Current date|
+
 You can find examples [here](./examples/title).
