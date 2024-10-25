@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	
+	<Version>1.0.0</Version>
+    <Authors>Dumbelfo</Authors>
+    <Company>AshProject</Company>
+	<PackageDescription>Fragment shader test application</PackageDescription>
+	<RepositoryUrl>https://github.com/Dumbelfo08/XXX</RepositoryUrl>
+	
+	<ApplicationIcon>res/icon.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AshLib" Version="2.1.0" />
+    <PackageReference Include="OpenTK" Version="4.8.2" />
+    <PackageReference Include="StbImageSharp" Version="2.30.15" />
+	
+	<EmbeddedResource Include="res/icon.png" />
+  </ItemGroup>
+
+</Project>
