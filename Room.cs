@@ -108,13 +108,23 @@ class Room : GameWindow{
 		while(true){
 			if(codeLines[index].Length > 0 && codeLines[index][0] == '@'){
 				loadProperty(codeLines[index]);
+				codeLines[index] = "";
 				index++;
 			}else{
 				break;
 			}
 		}
 		
-		codeLines = codeLines.Skip(index).ToArray();
+		while(true){
+			if(codeLines[index] != ""){
+				break;
+			}
+			index++;
+		}
+		
+		//Search where the actual code starts, and put the first line on line 0, instead of just deleting the first part of the file, so errors will show up in the lines they actually are in
+		codeLines[0] = codeLines[index];
+		codeLines[index] = "";
 		
 		shaderCode = string.Join('\n', codeLines);
 		
@@ -263,6 +273,7 @@ class Room : GameWindow{
 		dh.Start();
 		
 		string shaderCode = loadFile();
+		Console.WriteLine(shaderCode);
 		
 		handleIcon();		
 		
