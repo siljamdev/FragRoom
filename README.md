@@ -14,10 +14,23 @@ If the compiling process of the shader fails, it will display a warning detailin
 
 ## Code-wise specifications
 The input of the shader is a vec2 called **fragCoord**. It has the coordinates of the pixel, ranging from \[-1, -1\](Left bottom corner) to \[1, 1\](Right top corner).
-The output is a vec4 called **fragColor** (R, G, B, Alpha).
-There are also two uniforms, both floats: **iTime**, wich is the time since the application started, in seconds; and **iResolution**, wich is the size of the display, in pixels.
-There are examples of its use in [here](./examples).
+The output is a vec4, which can be called **fragColor** or any other thing you would like. It must have the format (R, G, B, Alpha).
 
+### Uniforms
+There are multiple uniforms provided.
+|Name|Type|Description|
+|---|---|---|
+|iTime|float|Time since the application started, in seconds|
+|iResolution|vec2|Resolution of the window, in pixels|
+|iHour|vec3|Hour of the system. Format: (Hour, Minute, Second)|
+|iDate|vec3|Date of the system. Format: (Day, Month, Year)|
+|iFps|float|Fps at which the app is running|
+|iMouse|vec2|Coordinates of the mouse pointer. Same format as fragCoord|
+|iTexture|sampler2D\[8\]|Textures, loaded from files. Has to be used paired with the texture options|
+
+There are examples of their use in [here](./examples).
+
+### Options
 This application provides with aditional options, also contained in the code file. They are passed in the form *@option : value*.
 The application will read these lines at the start if the file only, and will stop when encountering a blank line.
 These are all the options:
@@ -32,9 +45,12 @@ These are all the options:
 |fullscreen|0 or 1|If the application starts fullscreened. Default is not|
 |allowToggleFullscreen|0 or 1|If you will be able to toggle fullscreen on and off. Default is allowed|
 |fullscreenKey|number representing a key|The key that will toggle fullscreen. Can also type *f11* and it will be F11 key. Default is F11 key|
+|vsync|0 or 1|If the application uses VSync. Default is not|
 |grabCursor|0 or 1|If the cursor will be grabbed by the application or not. Default is not|
 |maxFps|non-negative number|The maximum fps. Default is 144|
-|icon|file path|The path to the **.ico** file that will be used as icon. Default is the normal app icon|
+|icon|file path|The path to the **.png** (other files extensions may work) file that will be used as icon. Default is the normal app icon|
+|textureXL (X can be between 0 and 7)|file path|The path to the **.png** (other files extensions may work) file that will be loaded as the texture X, with linear filters (iTexture\[X\])|
+|textureXN (X can be between 0 and 7)|file path|The path to the **.png** (other files extensions may work) file that will be loaded as the texture X, with nearest filters (iTexture\[X\])|
 
 You can find examples [here](./examples/options).
 

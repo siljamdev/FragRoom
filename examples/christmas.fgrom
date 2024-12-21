@@ -1,0 +1,53 @@
+@title: FragRoom Example: Christsmas Lights //Application special option. See examples/options
+
+#version 330 core
+out vec4 fragColor;
+  
+in vec2 fragCoord; // the input variable from the vertex shader (same name and same type)  
+uniform float iTime; //Time, in seconds
+uniform vec2 iResolution; //Resolution of display in pixels
+uniform vec3 iDate; //Date of the year
+
+vec3 palette(in float t){
+    // Calculate weights based on sine waves
+    float redWeight = max(0.0, sin(t));
+    float greenWeight = max(0.0, sin(t + 2.094));
+    float whiteWeight = max(0.0, sin(t + 4.188));
+    
+    float sum = redWeight + greenWeight + whiteWeight; // Normalize the weights to sum to 1
+    redWeight /= sum;
+    greenWeight /= sum;
+    whiteWeight /= sum;
+
+    
+    return redWeight * vec3(1.0, 0.0, 0.0) + greenWeight * vec3(0.0, 1.0, 0.0) + whiteWeight * vec3(1.0, 1.0, 1.0); // Combine the Christmas colors with their respective weights
+}
+
+
+void main(){
+    vec2 uv = fragCoord;
+	uv.x *= iResolution.x/iResolution.y; //Fix the aspect ratio
+    
+    uv.x *= sin(uv.y + iTime); //Change the coordinates in value of sine waves
+    uv.y *= sin(uv.x + iTime);
+    
+    float d = length(uv); //Distance to 0,0 of the transformed coords
+    
+	vec3 col;
+	
+	if(iDate.x == 25.0 && iDate.y == 12.0){ //Only access if today is Christmas
+		col = palette(d + 0.2*iTime); //calculate color from christmas palette
+	}else{
+		col = vec3(1.0); //Boring white color
+	}
+    
+    
+    d = sin(10.0*d + 0.7*iTime)/10.0; //Transform d
+    d = abs(d); //Get only the edges. If you comment this line you get cool effects too...
+    
+    
+    d = 0.02 / d; //Make it close to either 0 or 1
+    col *= d; //multiply the color by it
+    
+    fragColor = vec4(col, 1.0); // Output to screen
+}

@@ -88,6 +88,9 @@ public class Shader {
 	public void setVector4(string name, Vector4 data){
 		GL.Uniform4(GL.GetUniformLocation(this.id, name), data.X, data.Y, data.Z, data.W);
 	}
+	public void setVector3(string name, Vector3 data){
+		GL.Uniform3(GL.GetUniformLocation(this.id, name), data.X, data.Y, data.Z);
+	}
 	public void setVector2(string name, Vector2 data){
 		GL.Uniform2(GL.GetUniformLocation(this.id, name), data.X, data.Y);
 	}

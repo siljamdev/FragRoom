@@ -1,0 +1,18 @@
+@title: FragRoom Example: Textures //Application special option. See examples/options
+@texture0N: "opengl.png" //Load texture from local file, with nearest option
+
+#version 330 core
+out vec4 fragColor;
+  
+in vec2 fragCoord; // the input variable from the vertex shader (same name and same type)  
+uniform sampler2D iTexture[8]; //Textures (only first one will be used)
+
+void main(){
+	vec2 coordinates = fragCoord;
+	coordinates *= 0.5; //Transform the coordinates so the center is in the corner
+	coordinates += 0.5;
+	
+	coordinates.y = 1.0 - coordinates.y; //Put 0 at the top so texture isnt flipped
+	
+    fragColor = texture(iTexture[0], coordinates); //output the texture
+}

@@ -1,0 +1,31 @@
+@title: FragRoom Example: Mouse circle //Application special option. See examples/options
+
+#version 330 core
+out vec4 fragColor;
+  
+in vec2 fragCoord; // the input variable from the vertex shader (same name and same type)  
+uniform float iTime; //Time, in seconds
+uniform vec2 iResolution; //Resolution of display in pixels
+uniform vec2 iMouse; //Mouse cursor position
+
+vec3 palette(in float t){ //RGB palette in function of time
+	float r = sin(t) * 0.5 + 0.5; //map the sine function to [0,1]
+	float g = sin(t + 2*3.14*0.333) * 0.5 + 0.5; //map the sine function to [0,1] and introduces 120 degree phase
+	float b = sin(t + 2*3.14*0.666) * 0.5 + 0.5; //map the sine function to [0,1] and introduces 240 degree phase
+	
+	return vec3(r, g, b);
+}
+
+void main(){
+	vec2 coords = fragCoord;
+	coords.x *= iResolution.x/iResolution.y; //Fix the aspect ratio
+	
+	vec2 mouseCoords = iMouse;
+	mouseCoords.x *= iResolution.x/iResolution.y; //Fix the aspect ratio for the mouse position too
+	
+	float dist = length(coords - mouseCoords); //calcultae distance to center
+	float factor = 1.0 - step(sin(0.6*iTime)*0.4+0.6, dist); //calculate the factor with reverse step function
+	
+	vec3 color = palette(iTime) * factor; //Multiply by factor so only circe is colored
+    fragColor = vec4(color, 1.0); //output
+}

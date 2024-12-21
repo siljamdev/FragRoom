@@ -4,7 +4,8 @@
 @allowToggleFullscreen: 0 //dont let user stop fullscreen
 @allowClose: 0 //dont let user close app
 @secsToAutoClose: 15 //close on its own after 15 seconds
-@ //with this you have efectivelly created a hypnosis machine. The user cant get out! he will be trapped here for 15 seconds
+@vsync: 1 //Stop artifacts
+//with this you have efectivelly created a hypnosis machine. The user cant get out! he will be trapped here for 15 seconds
 
 #version 330 core
 out vec4 fragColor;

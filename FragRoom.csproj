@@ -10,7 +10,7 @@
     <Authors>Dumbelfo</Authors>
     <Company>AshProject</Company>
 	<PackageDescription>Fragment shader test application</PackageDescription>
-	<RepositoryUrl>https://github.com/Dumbelfo08/XXX</RepositoryUrl>
+	<RepositoryUrl>https://github.com/Dumbelfo08/FragRoom</RepositoryUrl>
 	
 	<ApplicationIcon>res/icon.ico</ApplicationIcon>
   </PropertyGroup>

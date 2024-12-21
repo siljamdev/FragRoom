@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -22,19 +23,31 @@ class Room : GameWindow{
 	private int width;
 	private DeltaHelper dh;
 	
+	private Vector2 mouse;
+	
 	private Keys closeKey = Keys.Escape;
 	private Keys fullscreenKey = Keys.F11;
 	private bool allowClose = true;
 	private int secondsToClose = -1;
 	private int maxFps = 144;
+	private bool useVsync = false;
 	private bool fullScreened = false;
 	private bool allowToggleFullscreen = true;
 	private bool fullscreenKeyPressed = false;
 	private string? iconPath = null;
 	
 	private string? filePath;
+	private string[] textures = new string[8];
 	
-	const string vertexShader = "#version 330 core\nlayout (location = 0) in vec3 aPos; out vec2 fragCoord;void main(){gl_Position = vec4(aPos, 1.0); fragCoord = gl_Position.xy;}";
+	private bool uniformTime;
+	private bool uniformResolution;
+	private bool uniformHour;
+	private bool uniformDate;
+	private bool uniformFPS;
+	private bool uniformMouse;
+	private bool uniformTextures;
+	
+	const string vertexShader = "#version 330 core\nlayout (location = 0) in vec2 aPos; out vec2 fragCoord;void main(){gl_Position = vec4(aPos, 0.0, 1.0); fragCoord = gl_Position.xy;}";
 	const string warningShader = "#version 330 core\nout vec4 fragColor;in vec2 fragCoord;uniform float iTime;uniform vec2 iResolution;float sdEquilateralTriangle(vec2 p,float r){float k=sqrt(3.0);p.x=abs(p.x)-r;p.y+=r/k;if(p.x+k*p.y>0.0)p=vec2(p.x-k*p.y,-k*p.x-p.y)/2.0;p.x-=clamp(p.x,-2.0*r,0.0);return-length(p)*sign(p.y);}float sdSegment(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;float h=clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0);return length(pa-ba*h);}vec3 palette(float n){float g=sin(n)/3.0+0.5;return vec3(0.9,g,0.0);}void main(){vec2 center=fragCoord;center.x*=iResolution.x/iResolution.y*0.9;center.y+=0.2;float dist=smoothstep(0.04,0.03,sdEquilateralTriangle(center,0.8))-smoothstep(0.10,0.09,distance(center,vec2(0.0,-0.3)))-smoothstep(0.1,0.09,sdSegment(center,vec2(0.0,-0.02),vec2(0.0,0.63)));vec3 color=palette(iTime*2.0)*dist;fragColor=vec4(color,0.0);}";
 	const string noFileShader = "#version 330 core\nout vec4 fragColor;in vec2 fragCoord;uniform float iTime;uniform vec2 iResolution;float sdArc(vec2 p,vec2 sc,float ra,float rb){p=vec2(cos(1.25)*p.x-sin(1.25)*p.y,sin(1.25)*p.x+cos(1.25)*p.y);p.x=abs(p.x);return((sc.y*p.x>sc.x*p.y)?length(p-sc*ra):abs(length(p)-ra))-rb;}float sdSegment(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;float h=clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0);return length(pa-ba*h);}vec3 palette(float n){float g=sin(n)/3.0+0.8;return vec3(0.1,g,0.5);}void main(){vec2 center=fragCoord;center.x*=iResolution.x/iResolution.y;vec2 semicircle=center;semicircle.y-=0.39;semicircle.x-=0.12;float dist=smoothstep(0.03,0.01,sdArc(semicircle,vec2(sin(2.1),cos(2.1)),0.4,0.09))+smoothstep(0.11,0.09,sdSegment(center,vec2(0.0,-0.5),vec2(0.0,0.0)))+smoothstep(0.11,0.09,distance(center,vec2(0.0,-0.8)));dist=min(dist,1.0);vec3 color=palette(iTime*2.0)*dist;fragColor=vec4(color,0.0);}";
 	
@@ -61,12 +74,13 @@ class Room : GameWindow{
 		if(p.Length < 1){
 			return p;
 		}
-		char[] c = p.ToCharArray();
-		if(c[0] == '\"' && c[c.Length - 1] == '\"'){
-			if(c.Length < 2){
+		p = p.Trim();
+		
+		if(p[0] == '\"' && p[p.Length - 1] == '\"'){
+			if(p.Length < 2){
 				return "";
 			}
-			return removeQuotes(p.Substring(1, p.Length - 2));
+			return p.Substring(1, p.Length - 2);
 		}
 		return p;
 	}
@@ -94,6 +108,8 @@ class Room : GameWindow{
 			
 			this.Title = "FragRoom - File not found";
 			secondsToClose = 15;
+			this.uniformTime = true;
+			this.uniformResolution = true;
 			showMessage("The file \"" + filePath + "\" couldn't be found");
 			return noFileShader;
 		}
@@ -131,6 +147,56 @@ class Room : GameWindow{
 		shaderCode = shaderCode.TrimStart();
 		
 		return shaderCode;
+	}
+	
+	private void tryLoadTextures(){
+		for(int i = 0; i < textures.Length; i++){
+			if(textures[i] != null && File.Exists(textures[i].Substring(1))){
+				Texture2D t;
+				if(textures[i][0] == 'L'){
+					t = Texture2D.generateFromFile(textures[i].Substring(1), TextureParams.Smooth, i);
+				}else if(textures[i][0] == 'N'){
+					t = Texture2D.generateFromFile(textures[i].Substring(1), TextureParams.Default, i);
+				}else{
+					t = Texture2D.generateFromFile(textures[i].Substring(1), TextureParams.Default, i);
+				}
+				
+				t.bind();
+				mainShader.setInt("iTexture[" + i + "]", i);
+			}
+		}
+	}
+	
+	private void loadUniforms(){
+		try{
+			// Get the number of active uniforms
+			GL.GetProgram(mainShader.id, GetProgramParameterName.ActiveUniforms, out int uniformCount);
+			
+			// Iterate through all active uniforms
+			for (int i = 0; i < uniformCount; i++){
+				// Get the uniform name, size, and type
+				GL.GetActiveUniform(mainShader.id, i, 256, out _, out int size, out ActiveUniformType type, out string name);
+				
+				if(size == 1 && type == ActiveUniformType.Float && name == "iTime"){
+					uniformTime = true;
+				}else if(size == 1 && type == ActiveUniformType.FloatVec2 && name == "iResolution"){
+					uniformResolution = true;
+				}else if(size == 1 && type == ActiveUniformType.FloatVec3 && name == "iHour"){
+					uniformHour = true;
+				}else if(size == 1 && type == ActiveUniformType.FloatVec3 && name == "iDate"){
+					uniformDate = true;
+				}else if(size == 1 && type == ActiveUniformType.Float && name == "iFps"){
+					uniformFPS = true;
+				}else if(size == 1 && type == ActiveUniformType.FloatVec2 && name == "iMouse"){
+					uniformMouse = true;
+				}else if(size == 8 && type == ActiveUniformType.Sampler2D && name == "iTexture[0]"){
+					uniformTextures = true;
+					this.tryLoadTextures();
+				}
+			}
+		}catch(Exception e){
+			Console.WriteLine(e);
+		}
 	}
 	
 	private void loadProperty(string line){
@@ -184,6 +250,11 @@ class Room : GameWindow{
 				this.fullscreenKey = (Keys) Int32.Parse(words[1]);
 				break;
 				
+				case "@vsync":
+				useVsync = words[1] == "1" ? true : false;
+				VSync = VSyncMode.On;
+				break;
+				
 				case "@grabCursor":
 				if(words[1] == "1"){
 					CursorState = CursorState.Grabbed;
@@ -195,12 +266,75 @@ class Room : GameWindow{
 				break;
 				
 				case "@icon":
-				this.iconPath = arg;
+				this.iconPath = removeQuotes(arg);
+				break;
+				
+				case "@texture0L":
+				this.textures[0] = "L" + removeQuotes(arg);
+				break;
+				
+				case "@texture1L":
+				this.textures[1] = "L" + removeQuotes(arg);
+				break;
+				
+				case "@texture2L":
+				this.textures[2] = "L" + removeQuotes(arg);
+				break;
+				
+				case "@texture3L":
+				this.textures[3] = "L" + removeQuotes(arg);
+				break;
+				
+				case "@texture4L":
+				this.textures[4] = "L" + removeQuotes(arg);
+				break;
+				
+				case "@texture5L":
+				this.textures[5] = "L" + removeQuotes(arg);
+				break;
+				
+				case "@texture6L":
+				this.textures[6] = "L" + removeQuotes(arg);
+				break;
+				
+				case "@texture7L":
+				this.textures[7] = "L" + removeQuotes(arg);
+				break;
+				
+				case "@texture0N":
+				this.textures[0] = "N" + removeQuotes(arg);
+				break;
+				
+				case "@texture1N":
+				this.textures[1] = "N" + removeQuotes(arg);
+				break;
+				
+				case "@texture2N":
+				this.textures[2] = "N" + removeQuotes(arg);
+				break;
+				
+				case "@texture3N":
+				this.textures[3] = "N" + removeQuotes(arg);
+				break;
+				
+				case "@texture4N":
+				this.textures[4] = "N" + removeQuotes(arg);
+				break;
+				
+				case "@texture5N":
+				this.textures[5] = "N" + removeQuotes(arg);
+				break;
+				
+				case "@texture6N":
+				this.textures[6] = "N" + removeQuotes(arg);
+				break;
+				
+				case "@texture7N":
+				this.textures[7] = "N" + removeQuotes(arg);
 				break;
 			}
 		} catch(Exception e){
-			Console.WriteLine(e.Message);
-			Console.WriteLine(e.StackTrace);
+			Console.WriteLine(e);
 		}
 	}
 	
@@ -218,18 +352,26 @@ class Room : GameWindow{
 		return s;
 	}
 	
-	public void setFullScreen(bool b){
+	void setFullScreen(bool b){
 		if(b){
-			this.WindowState = WindowState.Fullscreen;
-			this.fullScreened = true;
-		} else {
-			this.WindowState = WindowState.Normal;
-			this.fullScreened = false;
+			MonitorInfo mi = Monitors.GetMonitorFromWindow(this);
+			WindowState = WindowState.Fullscreen;
+			this.CurrentMonitor = mi.Handle;
+			fullScreened = true;
+			if(useVsync){
+				VSync = VSyncMode.On;
+			}
+		}else{
+			WindowState = WindowState.Normal;
+			fullScreened = false;
+			if(useVsync){
+				VSync = VSyncMode.On;
+			}
 		}
 	}
 	
 	private void UniformResize(){
-		if(this.mainShader != null){
+		if(this.mainShader != null && uniformResolution){
 			this.mainShader.setVector2("iResolution", new Vector2(this.width, this.height));
 		}
 	}
@@ -273,33 +415,8 @@ class Room : GameWindow{
 		dh.Start();
 		
 		string shaderCode = loadFile();
-		Console.WriteLine(shaderCode);
 		
-		handleIcon();		
-		
-		float[] vertices = { //Just the full screen will be
-			-1f, -1f, 0f,
-			-1f, 1f, 0f,
-			1f, -1f, 0f,
-			1f,  1f, 0f,
-			1f, -1f, 0f,
-			-1f, 1f, 0f
-		};  
-		
-		int VBO = GL.GenBuffer(); //Initialize VBO
-		GL.BindBuffer(BufferTarget.ArrayBuffer, VBO); //Bind VBO
-		GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw); //Set VBO to vertices
-		
-		VAO = GL.GenVertexArray(); //Initialize VAO
-		GL.BindVertexArray(VAO); //Bind VAO
-		
-		GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0); //Set parameters so it knows how to process it. 
-																								  //This is for the vertex position argument, the only one
-		GL.EnableVertexAttribArray(0); //It is in layout 0, so we set it
-		
-		GL.BindBuffer(BufferTarget.ArrayBuffer, 0); //Unbind VBO
-		GL.BindVertexArray(0); //Unbind VAO
-		GL.DeleteBuffer(VBO); //Delete VBO, we wont even need it anymore. If we delete before unbinding the VAO, it will unbind or something idk just dont do it
+		handleIcon();	
 		
 		try{
 			mainShader = new Shader(vertexShader, shaderCode, null);
@@ -308,10 +425,43 @@ class Room : GameWindow{
 			Console.WriteLine(e);
 			
 			mainShader = new Shader(vertexShader, warningShader, null);
+			this.uniformTime = true;
+			this.uniformResolution = true;
 			this.Title = "FragRoom - Warning! Error in shader";
 			secondsToClose = 15;
 			showMessage("EXCEPTION caught:\n" + e);
 		}
+		
+		mainShader.use();
+		
+		this.loadUniforms();
+		
+		float[] vertices = { //Just the full screen will be
+			-1f, -1f,
+			-1f, 1f,
+			1f, -1f,
+			1f,  1f,
+			1f, -1f,
+			-1f, 1f
+		};
+		
+		int VBO = GL.GenBuffer(); //Initialize VBO
+		GL.BindBuffer(BufferTarget.ArrayBuffer, VBO); //Bind VBO
+		GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw); //Set VBO to vertices
+		
+		VAO = GL.GenVertexArray(); //Initialize VAO
+		GL.BindVertexArray(VAO); //Bind VAO
+		
+		GL.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0); //Set parameters so it knows how to process it. 
+																								  //This is for the vertex position argument, the only one
+		GL.EnableVertexAttribArray(0); //It is in layout 0, so we set it
+		
+		GL.BindBuffer(BufferTarget.ArrayBuffer, 0); //Unbind VBO
+		GL.BindVertexArray(0); //Unbind VAO
+		GL.DeleteBuffer(VBO); //Delete VBO, we wont even need it anymore. If we delete before unbinding the VAO, it will unbind or something idk just dont do it
+		
+		mainShader.use();
+		GL.BindVertexArray(VAO); //Bind the VAO containg the object
 		
 		base.OnLoad();
 	}
@@ -334,22 +484,33 @@ class Room : GameWindow{
 		base.OnResize(args);
 	}
 	
+	protected override void OnMouseMove(MouseMoveEventArgs e){
+		if(uniformMouse){
+			mouse = new Vector2((e.X / this.width) * 2f - 1f, (e.Y / this.height) * 2f - 1f);
+			mouse.Y = -mouse.Y;
+		}
+        
+		base.OnMouseMove(e);
+    }
+	
 	protected override void OnUpdateFrame(FrameEventArgs args){
-		if(allowClose && KeyboardState.IsKeyDown(closeKey))
-		{
+		if(allowClose && KeyboardState.IsKeyDown(closeKey)){
 			Close();
 		}
+		
 		if(secondsToClose != -1 && dh.GetTime() > (double) secondsToClose){
 			Close();
 		}
-		if(allowToggleFullscreen && !fullscreenKeyPressed && KeyboardState.IsKeyDown(fullscreenKey))
-		{
+		
+		if(allowToggleFullscreen && !fullscreenKeyPressed && KeyboardState.IsKeyDown(fullscreenKey)){
 			fullscreenKeyPressed = true;
 			setFullScreen(!fullScreened);
 		}
+		
 		if(fullscreenKeyPressed && !KeyboardState.IsKeyDown(fullscreenKey)){
 			fullscreenKeyPressed = false;
 		}
+		
 		base.OnUpdateFrame(args);
 	}
 	
@@ -357,10 +518,26 @@ class Room : GameWindow{
 		GL.ClearColor(new Color4(0.0f, 0.0f, 0.0f, 1.0f));
 		GL.Clear(ClearBufferMask.ColorBufferBit);
 		
-		mainShader.use();
-		GL.BindVertexArray(VAO); //Bind the VAO containg the object
-		mainShader.setFloat("iTime", (float) dh.GetTime()); //Set the time
-		UniformResize(); //Update iResolution
+		if(uniformTime){
+			mainShader.setFloat("iTime", (float) dh.GetTime()); //Set the running time
+		}
+		
+		if(uniformHour){
+			mainShader.setVector3("iHour", new Vector3(DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second)); //Set the hour
+		}
+		
+		if(uniformDate){
+			mainShader.setVector3("iDate", new Vector3(DateTime.Now.Day, DateTime.Now.Month, DateTime.Now.Year)); //Set the date
+		}
+		
+		if(uniformFPS){
+			mainShader.setFloat("iFps", (float) dh.fps); //Set the fps
+		}
+		
+		if(uniformMouse){
+			mainShader.setVector2("iMouse", mouse); //Set the mouse pointer coords
+		}
+		
 		GL.DrawArrays(PrimitiveType.Triangles, 0, 6); //IMPORTANT: 6 IS THE NUMBER OF VERTICES, NOT TRIAGNLES
 		
 		this.Context.SwapBuffers();

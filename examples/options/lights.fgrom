@@ -1,8 +1,8 @@
 @title: FragRoom Example: Lights //title of the window
 @fullscren: 0 //Dont Start fullscreened
-@fullscreenKey: 65 //Close with a key
+@fullscreenKey: 65 //Fullscreen with a key
 @closeKey: 88 //Close with x key
-@maxFps: 60 //limit fps to 60
+@maxFps: 20 //limit fps to 20
 
 #version 330 core
 out vec4 fragColor;
