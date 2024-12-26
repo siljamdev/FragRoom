@@ -12,6 +12,8 @@ You can directly open the files (**.fgrom** or **.glsl**) with the app, or direc
 If the application can't find the specified file or any of the following, it will display a warning and a green/blue interrogation mark.
 If the compiling process of the shader fails, it will display a warning detailing the error(so you have a hint on what to solve ;) ), and it will display a yellow/red warning symbol.
 
+I modified an existing GLSL notepad++ language to make it useful for this application. I do not take any credits because i did not do the majority of the work. I unfortunately dont remember where i found it. You can download it [here](./n++)
+
 ## Code-wise specifications
 The input of the shader is a vec2 called **fragCoord**. It has the coordinates of the pixel, ranging from \[-1, -1\](Left bottom corner) to \[1, 1\](Right top corner).
 The output is a vec4, which can be called **fragColor** or any other thing you would like. It must have the format (R, G, B, Alpha).
