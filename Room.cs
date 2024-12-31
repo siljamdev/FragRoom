@@ -19,9 +19,11 @@ class Room : GameWindow{
 	
 	private int VAO;
 	private Shader mainShader; //We'll keep the shader class because why not Im too lazy
+	private Shader bufferShader;
 	private int height;
 	private int width;
 	private DeltaHelper dh;
+	private int frameCounter;
 	
 	private Vector2 mouse;
 	
@@ -39,15 +41,25 @@ class Room : GameWindow{
 	private string? filePath;
 	private string[] textures = new string[8];
 	
+	private int bufferA;
+	private int bufferB;
+	private int textureA;
+	private int textureB;
+	
+	private bool currentBuffer;
+	
 	private bool uniformTime;
+	private bool uniformFrame;
 	private bool uniformResolution;
 	private bool uniformHour;
 	private bool uniformDate;
 	private bool uniformFPS;
 	private bool uniformMouse;
 	private bool uniformTextures;
+	private bool uniformBackBuffer;
 	
-	const string vertexShader = "#version 330 core\nlayout (location = 0) in vec2 aPos; out vec2 fragCoord;void main(){gl_Position = vec4(aPos, 0.0, 1.0); fragCoord = gl_Position.xy;}";
+	const string vertexShader = "#version 330 core\nlayout (location = 0) in vec2 aPos;out vec2 fragCoord;void main(){gl_Position = vec4(aPos, 0.0, 1.0); fragCoord = gl_Position.xy;}";
+	const string bufferFragmentShader = "#version 330 core\nout vec4 fragColor;in vec2 fragCoord;uniform sampler2D buffer;void main(){fragColor = texture(buffer, fragCoord / 2.0 + 0.5);}";
 	const string warningShader = "#version 330 core\nout vec4 fragColor;in vec2 fragCoord;uniform float iTime;uniform vec2 iResolution;float sdEquilateralTriangle(vec2 p,float r){float k=sqrt(3.0);p.x=abs(p.x)-r;p.y+=r/k;if(p.x+k*p.y>0.0)p=vec2(p.x-k*p.y,-k*p.x-p.y)/2.0;p.x-=clamp(p.x,-2.0*r,0.0);return-length(p)*sign(p.y);}float sdSegment(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;float h=clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0);return length(pa-ba*h);}vec3 palette(float n){float g=sin(n)/3.0+0.5;return vec3(0.9,g,0.0);}void main(){vec2 center=fragCoord;center.x*=iResolution.x/iResolution.y*0.9;center.y+=0.2;float dist=smoothstep(0.04,0.03,sdEquilateralTriangle(center,0.8))-smoothstep(0.10,0.09,distance(center,vec2(0.0,-0.3)))-smoothstep(0.1,0.09,sdSegment(center,vec2(0.0,-0.02),vec2(0.0,0.63)));vec3 color=palette(iTime*2.0)*dist;fragColor=vec4(color,0.0);}";
 	const string noFileShader = "#version 330 core\nout vec4 fragColor;in vec2 fragCoord;uniform float iTime;uniform vec2 iResolution;float sdArc(vec2 p,vec2 sc,float ra,float rb){p=vec2(cos(1.25)*p.x-sin(1.25)*p.y,sin(1.25)*p.x+cos(1.25)*p.y);p.x=abs(p.x);return((sc.y*p.x>sc.x*p.y)?length(p-sc*ra):abs(length(p)-ra))-rb;}float sdSegment(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;float h=clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0);return length(pa-ba*h);}vec3 palette(float n){float g=sin(n)/3.0+0.8;return vec3(0.1,g,0.5);}void main(){vec2 center=fragCoord;center.x*=iResolution.x/iResolution.y;vec2 semicircle=center;semicircle.y-=0.39;semicircle.x-=0.12;float dist=smoothstep(0.03,0.01,sdArc(semicircle,vec2(sin(2.1),cos(2.1)),0.4,0.09))+smoothstep(0.11,0.09,sdSegment(center,vec2(0.0,-0.5),vec2(0.0,0.0)))+smoothstep(0.11,0.09,distance(center,vec2(0.0,-0.8)));dist=min(dist,1.0);vec3 color=palette(iTime*2.0)*dist;fragColor=vec4(color,0.0);}";
 	
@@ -70,37 +82,19 @@ class Room : GameWindow{
 		}
 	}
 	
-	public static string removeQuotes(string p){
-		if(p.Length < 1){
-			return p;
-		}
-		p = p.Trim();
-		
-		if(p[0] == '\"' && p[p.Length - 1] == '\"'){
-			if(p.Length < 2){
-				return "";
-			}
-			return p.Substring(1, p.Length - 2);
-		}
-		return p;
-	}
-	
 	private void chooseFileName(){
 		if(filePath != null){
 			return;
 		}
+		
 		if(File.Exists("fragment.fgrom")){
 			filePath = "fragment.fgrom";
 		}else if(File.Exists("fragment.glsl")){
 			filePath = "fragment.glsl";
-		}else if(File.Exists("shader.fgrom")){
-			filePath = "shader.fgrom";
-		}else if(File.Exists("shader.glsl")){
-			filePath = "shader.glsl";
 		}
 	}
 	
-	private string loadFile(){ //load the code and all the special properties
+	private string preprocess(){ //load the code and all the special properties
 		chooseFileName();
 		if(!File.Exists(filePath)){
 			Console.WriteLine("File not found!");
@@ -138,65 +132,17 @@ class Room : GameWindow{
 			index++;
 		}
 		
-		//Search where the actual code starts, and put the first line on line 0, instead of just deleting the first part of the file, so errors will show up in the lines they actually are in
-		codeLines[0] = codeLines[index];
-		codeLines[index] = "";
+		if(index != 0){
+			//Search where the actual code starts, and put the first line on line 0, instead of just deleting the first part of the file, so errors will show up in the lines they actually are in
+			codeLines[0] = codeLines[index];
+			codeLines[index] = "";
+		}
 		
 		shaderCode = string.Join('\n', codeLines);
 		
 		shaderCode = shaderCode.TrimStart();
 		
 		return shaderCode;
-	}
-	
-	private void tryLoadTextures(){
-		for(int i = 0; i < textures.Length; i++){
-			if(textures[i] != null && File.Exists(textures[i].Substring(1))){
-				Texture2D t;
-				if(textures[i][0] == 'L'){
-					t = Texture2D.generateFromFile(textures[i].Substring(1), TextureParams.Smooth, i);
-				}else if(textures[i][0] == 'N'){
-					t = Texture2D.generateFromFile(textures[i].Substring(1), TextureParams.Default, i);
-				}else{
-					t = Texture2D.generateFromFile(textures[i].Substring(1), TextureParams.Default, i);
-				}
-				
-				t.bind();
-				mainShader.setInt("iTexture[" + i + "]", i);
-			}
-		}
-	}
-	
-	private void loadUniforms(){
-		try{
-			// Get the number of active uniforms
-			GL.GetProgram(mainShader.id, GetProgramParameterName.ActiveUniforms, out int uniformCount);
-			
-			// Iterate through all active uniforms
-			for (int i = 0; i < uniformCount; i++){
-				// Get the uniform name, size, and type
-				GL.GetActiveUniform(mainShader.id, i, 256, out _, out int size, out ActiveUniformType type, out string name);
-				
-				if(size == 1 && type == ActiveUniformType.Float && name == "iTime"){
-					uniformTime = true;
-				}else if(size == 1 && type == ActiveUniformType.FloatVec2 && name == "iResolution"){
-					uniformResolution = true;
-				}else if(size == 1 && type == ActiveUniformType.FloatVec3 && name == "iHour"){
-					uniformHour = true;
-				}else if(size == 1 && type == ActiveUniformType.FloatVec3 && name == "iDate"){
-					uniformDate = true;
-				}else if(size == 1 && type == ActiveUniformType.Float && name == "iFps"){
-					uniformFPS = true;
-				}else if(size == 1 && type == ActiveUniformType.FloatVec2 && name == "iMouse"){
-					uniformMouse = true;
-				}else if(size == 8 && type == ActiveUniformType.Sampler2D && name == "iTexture[0]"){
-					uniformTextures = true;
-					this.tryLoadTextures();
-				}
-			}
-		}catch(Exception e){
-			Console.WriteLine(e);
-		}
 	}
 	
 	private void loadProperty(string line){
@@ -207,7 +153,7 @@ class Room : GameWindow{
 			words[1] = words[1].Trim();
 			switch(words[0].TrimEnd()){
 				case "@title":
-				this.Title = replaceValues(arg);
+				this.Title = replaceTitleValues(arg);
 				break;
 				
 				case "@width":
@@ -338,7 +284,7 @@ class Room : GameWindow{
 		}
 	}
 	
-	private string replaceValues(string s){
+	private string replaceTitleValues(string s){
 		Uri uri = new Uri(Path.GetFullPath(filePath));
 		
 		s = s.Replace("%p", Path.GetFullPath(uri.LocalPath)); //Full path
@@ -350,6 +296,60 @@ class Room : GameWindow{
 		s = s.Replace("%d", DateTime.Now.ToString());
 		
 		return s;
+	}
+	
+	private void initializeUniforms(){
+		try{
+			// Get the number of active uniforms
+			GL.GetProgram(mainShader.id, GetProgramParameterName.ActiveUniforms, out int uniformCount);
+			
+			// Iterate through all active uniforms
+			for (int i = 0; i < uniformCount; i++){
+				// Get the uniform name, size, and type
+				GL.GetActiveUniform(mainShader.id, i, 256, out _, out int size, out ActiveUniformType type, out string name);
+				
+				if(size == 1 && type == ActiveUniformType.Float && name == "iTime"){
+					uniformTime = true;
+				}else if(size == 1 && type == ActiveUniformType.Int && name == "iFrame"){
+					uniformFrame = true;
+				}else if(size == 1 && type == ActiveUniformType.FloatVec2 && name == "iResolution"){
+					uniformResolution = true;
+				}else if(size == 1 && type == ActiveUniformType.FloatVec3 && name == "iHour"){
+					uniformHour = true;
+				}else if(size == 1 && type == ActiveUniformType.FloatVec3 && name == "iDate"){
+					uniformDate = true;
+				}else if(size == 1 && type == ActiveUniformType.Float && name == "iFps"){
+					uniformFPS = true;
+				}else if(size == 1 && type == ActiveUniformType.FloatVec2 && name == "iMouse"){
+					uniformMouse = true;
+				}else if(size == 8 && type == ActiveUniformType.Sampler2D && name == "iTexture[0]"){
+					uniformTextures = true;
+					this.tryLoadTextures();
+				}else if(size == 1 && type == ActiveUniformType.Sampler2D && name == "iBackBuffer"){
+					uniformBackBuffer = true;
+				}
+			}
+		}catch(Exception e){
+			Console.WriteLine(e);
+		}
+	}
+	
+	private void tryLoadTextures(){
+		for(int i = 0; i < textures.Length; i++){
+			if(textures[i] != null && File.Exists(textures[i].Substring(1))){
+				Texture2D t;
+				if(textures[i][0] == 'L'){
+					t = Texture2D.generateFromFile(textures[i].Substring(1), TextureParams.Smooth, i + 1);
+				}else if(textures[i][0] == 'N'){
+					t = Texture2D.generateFromFile(textures[i].Substring(1), TextureParams.Default, i + 1);
+				}else{
+					t = Texture2D.generateFromFile(textures[i].Substring(1), TextureParams.Default, i + 1);
+				}
+				
+				t.bind();
+				mainShader.setInt("iTexture[" + i + "]", i + 1);
+			}
+		}
 	}
 	
 	void setFullScreen(bool b){
@@ -367,12 +367,6 @@ class Room : GameWindow{
 			if(useVsync){
 				VSync = VSyncMode.On;
 			}
-		}
-	}
-	
-	private void UniformResize(){
-		if(this.mainShader != null && uniformResolution){
-			this.mainShader.setVector2("iResolution", new Vector2(this.width, this.height));
 		}
 	}
 	
@@ -410,14 +404,56 @@ class Room : GameWindow{
 		this.Icon = w;
 	}
 	
+	private void generateBuffers(){
+		bufferShader = new Shader(vertexShader, bufferFragmentShader, null);
+		
+		bufferA = GL.GenFramebuffer();
+		GL.BindFramebuffer(FramebufferTarget.Framebuffer, bufferA);
+		
+		textureA = GL.GenTexture();
+		GL.BindTexture(TextureTarget.Texture2D, textureA);
+		
+		GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int) TextureMinFilter.Nearest);
+		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int) TextureMagFilter.Nearest);
+		
+		GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, textureA, 0);
+		
+		if (GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != FramebufferErrorCode.FramebufferComplete){
+			throw new Exception("Framebuffer A is not complete!");
+		}
+		
+		bufferB = GL.GenFramebuffer();
+		GL.BindFramebuffer(FramebufferTarget.Framebuffer, bufferB);
+		
+		textureB = GL.GenTexture();
+		GL.BindTexture(TextureTarget.Texture2D, textureB);
+		
+		GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int) TextureMinFilter.Nearest);
+		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int) TextureMagFilter.Nearest);
+		
+		GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, textureB, 0);
+		
+		if (GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != FramebufferErrorCode.FramebufferComplete){
+			throw new Exception("Framebuffer B is not complete!");
+		}
+	}
+	
+	private void uniformResize(){
+		if(this.mainShader != null && uniformResolution){
+			this.mainShader.setVector2("iResolution", new Vector2(this.width, this.height));
+		}
+	}
+	
 	protected override void OnLoad(){
 		dh = new DeltaHelper();
-		dh.Start();
 		
-		string shaderCode = loadFile();
+		string shaderCode = preprocess();
 		
-		handleIcon();	
+		handleIcon(); //set app icon
 		
+		//create shader program
 		try{
 			mainShader = new Shader(vertexShader, shaderCode, null);
 		} catch(Exception e){
@@ -432,10 +468,7 @@ class Room : GameWindow{
 			showMessage("EXCEPTION caught:\n" + e);
 		}
 		
-		mainShader.use();
-		
-		this.loadUniforms();
-		
+		//create mesh
 		float[] vertices = { //Just the full screen will be
 			-1f, -1f,
 			-1f, 1f,
@@ -460,8 +493,21 @@ class Room : GameWindow{
 		GL.BindVertexArray(0); //Unbind VAO
 		GL.DeleteBuffer(VBO); //Delete VBO, we wont even need it anymore. If we delete before unbinding the VAO, it will unbind or something idk just dont do it
 		
-		mainShader.use();
 		GL.BindVertexArray(VAO); //Bind the VAO containg the object
+		
+		mainShader.use();
+		
+		this.initializeUniforms();
+		
+		if(uniformBackBuffer){
+			generateBuffers();
+			GL.ActiveTexture(TextureUnit.Texture0); //all buffer operations are here
+		}
+		
+		GL.ClearColor(new Color4(0.0f, 0.0f, 0.0f, 1.0f));
+		
+		frameCounter = 0;
+		dh.Start();
 		
 		base.OnLoad();
 	}
@@ -480,7 +526,22 @@ class Room : GameWindow{
 		GL.Viewport(0, 0, args.Width, args.Height);
 		this.width = args.Width;
 		this.height = args.Height;
-		UniformResize(); //Update the uniform
+		uniformResize(); //Update the uniform
+		
+		if(uniformBackBuffer){
+			GL.BindTexture(TextureTarget.Texture2D, textureA);
+			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+			
+			GL.BindTexture(TextureTarget.Texture2D, textureB);
+			GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
+			
+			if(currentBuffer){
+				GL.BindTexture(TextureTarget.Texture2D, textureB);
+			}else{
+				GL.BindTexture(TextureTarget.Texture2D, textureA);
+			}
+		}
+		
 		base.OnResize(args);
 	}
 	
@@ -515,11 +576,24 @@ class Room : GameWindow{
 	}
 	
 	protected override void OnRenderFrame(FrameEventArgs args){
-		GL.ClearColor(new Color4(0.0f, 0.0f, 0.0f, 1.0f));
-		GL.Clear(ClearBufferMask.ColorBufferBit);
+		if(uniformBackBuffer){
+			if(currentBuffer){
+				GL.BindFramebuffer(FramebufferTarget.Framebuffer, bufferA);
+			}else{
+				GL.BindFramebuffer(FramebufferTarget.Framebuffer, bufferB);
+			}
+			
+			GL.Clear(ClearBufferMask.ColorBufferBit);
+			
+			mainShader.use();
+		}
 		
 		if(uniformTime){
 			mainShader.setFloat("iTime", (float) dh.GetTime()); //Set the running time
+		}
+		
+		if(uniformFrame){
+			mainShader.setInt("iFrame", frameCounter); //Set the current frame number
 		}
 		
 		if(uniformHour){
@@ -540,11 +614,45 @@ class Room : GameWindow{
 		
 		GL.DrawArrays(PrimitiveType.Triangles, 0, 6); //IMPORTANT: 6 IS THE NUMBER OF VERTICES, NOT TRIAGNLES
 		
+		if(uniformBackBuffer){
+			GL.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+			bufferShader.use();
+			
+			if(currentBuffer){
+				GL.BindTexture(TextureTarget.Texture2D, textureA);
+			}else{
+				GL.BindTexture(TextureTarget.Texture2D, textureB);
+			}
+			
+			GL.Clear(ClearBufferMask.ColorBufferBit);
+			
+			GL.DrawArrays(PrimitiveType.Triangles, 0, 6); //IMPORTANT: 6 IS THE NUMBER OF VERTICES, NOT TRIAGNLES
+			
+			currentBuffer = !currentBuffer;
+		}
+		
 		this.Context.SwapBuffers();
 		base.OnRenderFrame(args);
 		
 		dh.Target((double)maxFps);
+		frameCounter++;
 		dh.Frame();
+	}
+	
+	//utility
+	public static string removeQuotes(string p){
+		if(p.Length < 1){
+			return p;
+		}
+		p = p.Trim();
+		
+		if(p[0] == '\"' && p[p.Length - 1] == '\"'){
+			if(p.Length < 2){
+				return "";
+			}
+			return p.Substring(1, p.Length - 2);
+		}
+		return p;
 	}
 	
 	[DllImport("user32.dll", CharSet = CharSet.Unicode)]

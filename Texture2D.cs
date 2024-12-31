@@ -106,8 +106,11 @@ public class Texture2D{
 			case 7:
 			return TextureUnit.Texture7;
 			
+			case 8:
+			return TextureUnit.Texture8;
+			
 			default:
-			return TextureUnit.Texture0;
+			return TextureUnit.Texture1;
 		}
 	}
 }

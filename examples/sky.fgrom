@@ -1,0 +1,20 @@
+@title: FragRoom Example: Star sky //Application special option. See examples/options
+
+#version 330 core
+out vec4 fragColor;
+
+in vec2 fragCoord; // the input variable from the vertex shader (same name and same type)  
+
+//Simple hash function that generates a random value between 0 and 1
+float random(vec3 p) {
+    return fract(sin(dot(p, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
+}
+
+void main(){  
+    if(random(vec3(fragCoord, 1.0)) > 0.997){
+		//The brightness of each star is random too
+		fragColor = vec4(random(vec3(fragCoord, 2.0)));
+	}else{
+		fragColor = vec4(0.0);
+	}
+}

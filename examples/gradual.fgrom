@@ -1,0 +1,29 @@
+@title: FragRoom Example: Gradual Fill //Application special option. See examples/options
+
+#version 330 core
+out vec4 fragColor;
+  
+in vec2 fragCoord; // the input variable from the vertex shader (same name and same type)
+
+uniform float iTime; //Time, in seconds
+uniform vec2 iResolution; //Resolution of display in pixels
+uniform sampler2D iBackBuffer; //Las frame, as a texture
+
+//Simple hash function that generates a random value between 0 and 1
+float random(vec3 p){
+    return fract(sin(dot(p, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
+}
+
+//The screen will gradually fill up
+void main()
+{
+	vec2 uv = fragCoord / 2.0 + 0.5; //Coordinates wih 0,0 in left bottom corner
+	
+	if(random(vec3(uv, iTime)) > 0.999){ //If random is very big
+		fragColor = vec4(random(vec3(uv, iTime * 1.2)), random(vec3(uv, iTime * 3.88)), random(vec3(uv, iTime * 10.1)), 1.0); //fill with a random color
+	}else{
+		fragColor = vec4(0.0, 0.0, 0.0, 1.0); //else, its black
+	}
+	
+	fragColor += texture(iBackBuffer, uv); //Sum previous value
+}

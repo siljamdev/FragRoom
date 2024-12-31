@@ -8,7 +8,7 @@ It is a small application that allows you to execute GLSL fragment shaders. Thes
 
 ## How is it used?
 You open the files containing the raw GLSL code. They can also have additional options(Discussed later)
-You can directly open the files (**.fgrom** or **.glsl**) with the app, or directly execute the program and it will try to execute one of the following: *fragment.fgrom*, *shader.fgrom*, *fragment.glsl*, *shader.glsl*.
+You can directly open the files (**.fgrom** or **.glsl**) with the app, or directly execute the program and it will try to execute one of the following: *fragment.fgrom*, *fragment.glsl*.
 If the application can't find the specified file or any of the following, it will display a warning and a green/blue interrogation mark.
 If the compiling process of the shader fails, it will display a warning detailing the error(so you have a hint on what to solve ;) ), and it will display a yellow/red warning symbol.
 
@@ -23,12 +23,14 @@ There are multiple uniforms provided.
 |Name|Type|Description|
 |---|---|---|
 |iTime|float|Time since the application started, in seconds|
+|iFrame|int|The number of processed frames|
 |iResolution|vec2|Resolution of the window, in pixels|
 |iHour|vec3|Hour of the system. Format: (Hour, Minute, Second)|
 |iDate|vec3|Date of the system. Format: (Day, Month, Year)|
 |iFps|float|Fps at which the app is running|
 |iMouse|vec2|Coordinates of the mouse pointer. Same format as fragCoord|
 |iTexture|sampler2D\[8\]|Textures, loaded from files. Has to be used paired with the texture options|
+|iBackBuffer|sampler2D|Last frame, as a texture. Important to note, it will be erased when the window changes size|
 
 There are examples of their use in [here](./examples).
 
