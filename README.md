@@ -78,6 +78,7 @@ The list of valid formats is:
 |shadereditor|The android app [Shader Editor](https://play.google.com/store/apps/details?id=de.markusfisch.android.shadereditor&pcampaignid=web_share)|
 |webgl|WebGL 2.0 compatible code|
 |fragroom|The format used by this very application|
+
 Conversion between some formats might not be supported.
 
 When translating from Shadertoy, you can specify the id of the shader (http://www.shadertoy.com/view/XXXXXX) instead of having to download it.
