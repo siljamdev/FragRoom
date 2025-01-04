@@ -9,8 +9,8 @@ uniform vec2 iResolution; //Resolution of display in pixels
 
 vec3 palette(in float t){ //RGB palette in function of time
 	float r = sin(t) * 0.5 + 0.5; //map the sine function to [0,1]
-	float g = sin(t + 2*3.14*0.333) * 0.5 + 0.5; //map the sine function to [0,1] and introduces 120 degree phase
-	float b = sin(t + 2*3.14*0.666) * 0.5 + 0.5; //map the sine function to [0,1] and introduces 240 degree phase
+	float g = sin(t + 2.0*3.14*0.333) * 0.5 + 0.5; //map the sine function to [0,1] and introduces 120 degree phase
+	float b = sin(t + 2.0*3.14*0.666) * 0.5 + 0.5; //map the sine function to [0,1] and introduces 240 degree phase
 	
 	return vec3(r, g, b);
 }

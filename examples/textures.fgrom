@@ -1,5 +1,5 @@
 @title: FragRoom Example: Textures //Application special option. See examples/options
-@texture0N: "opengl.png" //Load texture from local file, with nearest option
+@texture0N: "opengl.png" //Load texture from local file, with nearest filter
 
 #version 330 core
 out vec4 fragColor;

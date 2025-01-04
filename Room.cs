@@ -58,6 +58,8 @@ class Room : GameWindow{
 	private bool uniformTextures;
 	private bool uniformBackBuffer;
 	
+	public const string version = "v1.4.0";
+	
 	const string vertexShader = "#version 330 core\nlayout (location = 0) in vec2 aPos;out vec2 fragCoord;void main(){gl_Position = vec4(aPos, 0.0, 1.0); fragCoord = gl_Position.xy;}";
 	const string bufferFragmentShader = "#version 330 core\nout vec4 fragColor;in vec2 fragCoord;uniform sampler2D buffer;void main(){fragColor = texture(buffer, fragCoord / 2.0 + 0.5);}";
 	const string warningShader = "#version 330 core\nout vec4 fragColor;in vec2 fragCoord;uniform float iTime;uniform vec2 iResolution;float sdEquilateralTriangle(vec2 p,float r){float k=sqrt(3.0);p.x=abs(p.x)-r;p.y+=r/k;if(p.x+k*p.y>0.0)p=vec2(p.x-k*p.y,-k*p.x-p.y)/2.0;p.x-=clamp(p.x,-2.0*r,0.0);return-length(p)*sign(p.y);}float sdSegment(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;float h=clamp(dot(pa,ba)/dot(ba,ba),0.0,1.0);return length(pa-ba*h);}vec3 palette(float n){float g=sin(n)/3.0+0.5;return vec3(0.9,g,0.0);}void main(){vec2 center=fragCoord;center.x*=iResolution.x/iResolution.y*0.9;center.y+=0.2;float dist=smoothstep(0.04,0.03,sdEquilateralTriangle(center,0.8))-smoothstep(0.10,0.09,distance(center,vec2(0.0,-0.3)))-smoothstep(0.1,0.09,sdSegment(center,vec2(0.0,-0.02),vec2(0.0,0.63)));vec3 color=palette(iTime*2.0)*dist;fragColor=vec4(color,0.0);}";
@@ -74,7 +76,110 @@ class Room : GameWindow{
 	public static void Main(string[] args){
 		string path = null;
 		if(args.Length > 0){
-			path = removeQuotes(args[0]);
+			switch(args[0]){
+				case "view": //view command
+				if(args.Length < 2){
+					return;
+				}
+				
+				path = removeQuotes(args[1]);
+				break;
+				
+				default: //view command
+				path = removeQuotes(args[0]);
+				break;
+				
+				case "translate": //translate command
+				if(args.Length < 4){
+					Console.WriteLine("Not enough arguments");
+					return;
+				}
+				
+				Uri uri = new Uri(Path.GetFullPath(args[3]));
+				
+				switch(args[1]){
+					case "fragroom":
+					switch(args[2]){
+						case "shadereditor":
+						if(!File.Exists(args[3])){
+							Console.WriteLine("File does not exist");
+							return;
+						}
+						File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".glsl", Translator.roomToAndroid(File.ReadAllText(args[3])));
+						break;
+						
+						case "shadertoy":
+						if(!File.Exists(args[3])){
+							Console.WriteLine("File does not exist");
+							return;
+						}
+						File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".glsl", Translator.roomToToy(File.ReadAllText(args[3])));
+						break;
+						
+						case "webgl":
+						if(!File.Exists(args[3])){
+							Console.WriteLine("File does not exist");
+							return;
+						}
+						File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".glsl", Translator.roomToWeb(File.ReadAllText(args[3])));
+						break;
+						
+						default:
+						Console.WriteLine("Not supported output format");
+						break;
+					}
+					break;
+					
+					case "shadereditor":
+					switch(args[2]){
+						case "fragroom":
+						if(!File.Exists(args[3])){
+							Console.WriteLine("File does not exist");
+							return;
+						}
+						File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".fgrom", Translator.androidToRoom(File.ReadAllText(args[3])));
+						path = Path.GetFileNameWithoutExtension(uri.LocalPath) + ".fgrom";
+						break;
+						
+						default:
+						Console.WriteLine("Not supported output format");
+						break;
+					}
+					break;
+					
+					case "shadertoy":
+					switch(args[2]){
+						case "fragroom":
+						if(!File.Exists(args[3])){
+							ShaderDetails? sd = ShadertoyParser.fetchShader(args[3]);
+							if(sd != null){
+								File.WriteAllText(((ShaderDetails)sd).name + ".fgrom", Translator.toyToRoom((ShaderDetails) sd));
+								path = ((ShaderDetails)sd).name + ".fgrom";
+							}else{
+								Console.WriteLine("File does not exist, neither shadertoy shader");
+								return;
+							}
+						}else{
+							File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".fgrom", Translator.toyToRoom(new ShaderDetails(null, File.ReadAllText(args[3]), null, null)));
+							path = Path.GetFileNameWithoutExtension(uri.LocalPath) + ".fgrom";
+						}
+						break;
+						
+						default:
+						Console.WriteLine("Not supported output format");
+						break;
+					}
+					break;
+					
+					default:
+					Console.WriteLine("Not supported input format");
+					break;
+				}
+				if(path != null){
+					break;
+				}
+				return;
+			}
 		}
 		
 		using(Room ro = new Room(path)){

@@ -67,3 +67,19 @@ These are the special sequences for the title:
 |%d|Current date|
 
 You can find examples [here](./examples/title).
+
+## Translate feature
+When coding cool shaders, you often work in multiple places, each one with different formats and names for the names of the same things. With FragRoom, you can easily translate between those formats!
+There is support for translating from and to [Shadertoy](https://www.shadertoy.com/), [Shader Editor](https://play.google.com/store/apps/details?id=de.markusfisch.android.shadereditor&pcampaignid=web_share), and WebGL compatible code.
+To translate, you just have to use the command line interface as:
+`FragRoom translate inputFormat outputFormat filePath`
+The list of valid formats is:
+|shadertoy|The popular web page [Shadertoy](https://www.shadertoy.com/)|
+|shadereditor|The android app [Shader Editor](https://play.google.com/store/apps/details?id=de.markusfisch.android.shadereditor&pcampaignid=web_share)|
+|webgl|WebGL 2.0 compatible code|
+|fragroom|The format used by this very application|
+Conversion between some formats might not be supported.
+
+When translating from Shadertoy, you can specify the id of the shader (http://www.shadertoy.com/view/XXXXXX) instead of having to download it.
+
+For example, the code of [this Shadertoy shader](https://www.shadertoy.com/view/43KczD) was translated using FragRoom.

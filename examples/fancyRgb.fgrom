@@ -8,8 +8,8 @@ uniform float iTime; //Time, in seconds
 
 void main(){
 	float r = sin(iTime) * 0.5 + 0.5; //map the sine function to [0,1]
-	float g = sin(iTime + 2*3.14*0.333) * 0.5 + 0.5; //map the sine function to [0,1] and introduces 120 degree phase
-	float b = sin(iTime + 2*3.14*0.666) * 0.5 + 0.5; //map the sine function to [0,1] and introduces 240 degree phase
+	float g = sin(iTime + 2.0*3.14*0.333) * 0.5 + 0.5; //map the sine function to [0,1] and introduces 120 degree phase
+	float b = sin(iTime + 2.0*3.14*0.666) * 0.5 + 0.5; //map the sine function to [0,1] and introduces 240 degree phase
 	
 	r += fragCoord.x;
 	g += fragCoord.y;				//Uses the coordinates to offset the colors
