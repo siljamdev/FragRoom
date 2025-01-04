@@ -74,6 +74,8 @@ There is support for translating from and to [Shadertoy](https://www.shadertoy.c
 To translate, you just have to use the command line interface as:
 `FragRoom translate inputFormat outputFormat filePath`
 The list of valid formats is:
+|Name|Description|
+|---|---|
 |shadertoy|The popular web page [Shadertoy](https://www.shadertoy.com/)|
 |shadereditor|The android app [Shader Editor](https://play.google.com/store/apps/details?id=de.markusfisch.android.shadereditor&pcampaignid=web_share)|
 |webgl|WebGL 2.0 compatible code|
