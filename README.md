@@ -99,3 +99,5 @@ To transform it, you have to use the command line interface as:
 `FragRoom web filePath`
 
 An *html* file will be generated.
+
+There are some examples [here](./examples/web).
