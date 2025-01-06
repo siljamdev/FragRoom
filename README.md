@@ -72,7 +72,9 @@ You can find examples [here](./examples/title).
 When coding cool shaders, you often work in multiple places, each one with different formats and names for the names of the same things. With FragRoom, you can easily translate between those formats!
 There is support for translating from and to [Shadertoy](https://www.shadertoy.com/), [Shader Editor](https://play.google.com/store/apps/details?id=de.markusfisch.android.shadereditor&pcampaignid=web_share), and WebGL compatible code.
 To translate, you have to use the command line interface as:
+
 `FragRoom translate inputFormat outputFormat filePath`
+
 A *glsl* or *fgrom* file will be generated.
 
 The list of valid formats is:
@@ -93,5 +95,7 @@ There are some examples [here](./examples/translations).
 ## Web feature
 You can transform FragRoom files into *html* files that contain everything needed for the shader to be executed in the browser, using WebGL2. It contains the textures, the shader code, and everything else needed.
 To transform it, you have to use the command line interface as:
+
 `FragRoom web filePath`
+
 An *html* file will be generated.
