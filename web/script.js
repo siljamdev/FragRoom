@@ -169,7 +169,7 @@ function createMesh(gl, program){
 }
 
 //Initialization
-function initializeWebGL(){
+async function initializeWebGL(){
     const canvas = document.getElementById('glCanvas');
     const gl = canvas.getContext('webgl2');
     if(!gl){
@@ -205,7 +205,7 @@ function initializeWebGL(){
 	const iMouse = gl.getUniformLocation(program, `iMouse`);
 	
 	//Textures
-	loadTexture(program, gl, 0);
+	await loadTexture(program, gl, 0);
 	
 	//Buffers
 	const iBackBuffer = gl.getUniformLocation(program, `iBackBuffer`);
