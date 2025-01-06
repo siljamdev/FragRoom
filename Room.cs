@@ -58,7 +58,7 @@ partial class Room : GameWindow{
 	private bool uniformTextures;
 	private bool uniformBackBuffer;
 	
-	public const string version = "v1.4.1";
+	public const string version = "v1.4.2";
 	
 	const string vertexShader = "#version 330 core\nlayout (location = 0) in vec2 aPos;out vec2 fragCoord;void main(){gl_Position = vec4(aPos, 0.0, 1.0); fragCoord = gl_Position.xy;}";
 	const string bufferFragmentShader = "#version 330 core\nout vec4 fragColor;in vec2 fragCoord;uniform sampler2D buffer;void main(){fragColor = texture(buffer, fragCoord / 2.0 + 0.5);}";

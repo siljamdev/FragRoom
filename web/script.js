@@ -39,21 +39,28 @@ const textureSource = [
 
 //Texture functions
 function createTextureFromBase64(base64Data, gl, filter){
-	const texture = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, texture);
-	
-	const chosenFilter = (filter == 'N') ? gl.NEAREST : gl.LINEAR;
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, chosenFilter);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, chosenFilter);
-	
-	const image = new Image();
-	image.onload = function() {
-		tgl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-		gl.generateMipmap(gl.TEXTURE_2D)
-	};
-	
-	image.src = base64Data;
-	return texture;
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    
+    const chosenFilter = (filter === 'N') ? gl.NEAREST : gl.LINEAR;
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, chosenFilter);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, chosenFilter);
+
+    return new Promise((resolve, reject) => {
+        const image = new Image();
+        
+        image.onload = function(){
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+            gl.generateMipmap(gl.TEXTURE_2D);
+            resolve(texture);
+        };
+
+        image.onerror = function(){
+            reject(new Error('Error loading the texture image'));
+        };
+
+        image.src = base64Data;
+    });
 }
 
 function numToUnit(num, gl){
@@ -80,10 +87,10 @@ function numToUnit(num, gl){
 	}
 }
 
-function loadTexture(program, gl, id){
+async function loadTexture(program, gl, id){
 	if(textureSource[id] != null){
-		const t = createTextureFromBase64(textureSource[id].substring(1), gl, textureSource[id][0]);
 		gl.activeTexture(numToUnit(id + 1, gl));
+		const t = await createTextureFromBase64(textureSource[id].substring(1), gl, textureSource[id][0]);
 		gl.bindTexture(gl.TEXTURE_2D, t);
 		gl.uniform1i(gl.getUniformLocation(program, 'iTexture[' + id + ']'), id + 1);
 	}
