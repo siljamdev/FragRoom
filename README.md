@@ -53,8 +53,8 @@ These are all the options:
 |grabCursor|0 or 1|If the cursor will be grabbed by the application or not. Default is not|
 |maxFps|non-negative number|The maximum fps. Default is 144|
 |icon|file path|The path to the **.png** (other files extensions may work) file that will be used as icon. Default is the normal app icon|
-|textureXL (X can be between 0 and 7)|file path|The path to the **.png** (other files extensions may work) file that will be loaded as the texture X, with linear filters (iTexture\[X\])|
-|textureXN (X can be between 0 and 7)|file path|The path to the **.png** (other files extensions may work) file that will be loaded as the texture X, with nearest filters (iTexture\[X\])|
+|texture*X*L (X can be between 0 and 7)|file path|The path to the **.png** (other files extensions may work) file that will be loaded as the texture X, with linear filters (iTexture\[X\])|
+|texture*X*N (X can be between 0 and 7)|file path|The path to the **.png** (other files extensions may work) file that will be loaded as the texture X, with nearest filters (iTexture\[X\])|
 
 You can find examples [here](./examples/options).
 
@@ -71,8 +71,10 @@ You can find examples [here](./examples/title).
 ## Translate feature
 When coding cool shaders, you often work in multiple places, each one with different formats and names for the names of the same things. With FragRoom, you can easily translate between those formats!
 There is support for translating from and to [Shadertoy](https://www.shadertoy.com/), [Shader Editor](https://play.google.com/store/apps/details?id=de.markusfisch.android.shadereditor&pcampaignid=web_share), and WebGL compatible code.
-To translate, you just have to use the command line interface as:
+To translate, you have to use the command line interface as:
 `FragRoom translate inputFormat outputFormat filePath`
+A *glsl* or *fgrom* file will be generated.
+
 The list of valid formats is:
 |Name|Description|
 |---|---|
@@ -86,3 +88,10 @@ Conversion between some formats might not be supported.
 When translating from Shadertoy, you can specify the id of the shader (http://www.shadertoy.com/view/XXXXXX) instead of having to download it.
 
 For example, the code of [this Shadertoy shader](https://www.shadertoy.com/view/43KczD) was translated using FragRoom.
+There are some examples [here](./examples/translations).
+
+## Web feature
+You can transform FragRoom files into *html* files that contain everything needed for the shader to be executed in the browser, using WebGL2. It contains the textures, the shader code, and everything else needed.
+To transform it, you have to use the command line interface as:
+`FragRoom web filePath`
+An *html* file will be generated.

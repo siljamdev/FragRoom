@@ -1,0 +1,12 @@
+@title: FragRoom Example: Icon //Application special option. See examples/options
+@icon: "opengl.png" //Window icon from a texture
+
+#version 330 core
+out vec4 fragColor;
+  
+in vec2 fragCoord; // the input variable from the vertex shader (same name and same type)
+uniform float iTime; // time, in seconds
+
+void main(){
+    fragColor = vec4(sin(iTime), 1.0, 0.3, 1.0); //output something
+}

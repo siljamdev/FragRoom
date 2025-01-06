@@ -1,0 +1,43 @@
+#version 330 core
+
+//Translated using FragRoom version v1.4.1 - https://github.com/Dumbelfo08/FragRoom
+//Parsed directly from Shadertoy. Author: Dumbelfo
+//https://www.shadertoy.com/view/X3KcW1
+
+out vec4 fragColor;
+in vec2 fragCoord;
+uniform float iTime;
+uniform vec2 iResolution;
+float random(int seed, int i){
+    int n = seed;
+    for(int j = 0; j < (seed % 48); j++){
+        i *= i;
+    }
+    
+    n = (168813 * i * n + 26532) % 4294967;
+    
+    return  float(n % 256)/255.0;
+}
+
+void mainImage(out vec4 TRANSLATOR_TR_fragColor, in vec2 TRANSLATOR_TR_fragCoord){
+    int p = 8;
+    vec2 r = vec2(vec3(iResolution, 1.0)/float(p));
+    
+    float s1 = 1.0;
+    float s2 = 2.0;
+    float speed = 22.0;
+    
+    vec2 corner = TRANSLATOR_TR_fragCoord / iResolution;
+    
+    vec2 square = floor(corner * r);
+    vec2 uv = vec2(0.0,0.6*random(49,int(speed*iTime + s1*square.y + s2*square.x + mod(32.0-square.x,24.0) + mod(square.y,45.0)*iTime)));
+    
+    // Output to screen
+    TRANSLATOR_TR_fragColor = vec4(uv,0.0,1.0);
+}
+void main(){
+    vec4 TRANSLATOR_TR_fragColor;
+    vec2 TRANSLATOR_TR_fragCoord = (fragCoord / 2.0 + 0.5) * (iResolution - 1.0) + 0.5;
+    mainImage(TRANSLATOR_TR_fragColor, TRANSLATOR_TR_fragCoord);
+    fragColor = TRANSLATOR_TR_fragColor;
+}

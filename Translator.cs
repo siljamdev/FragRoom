@@ -2,7 +2,99 @@ using System;
 using System.Text;
 
 static class Translator{
-	public static string toyToRoom(ShaderDetails d){
+	
+	public static void handleTranslation(string inputFormat, string outputFormat, string path){
+		string showPath = null;
+		
+		Uri uri = new Uri(Path.GetFullPath(path));
+		
+		switch(inputFormat){
+			case "fragroom":
+			switch(outputFormat){
+				case "shadereditor":
+				if(!File.Exists(path)){
+					Room.showMessage("The file \"" + path + "\" couldn't be found");
+					return;
+				}
+				File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".glsl", roomToAndroid(File.ReadAllText(path)));
+				break;
+				
+				case "shadertoy":
+				if(!File.Exists(path)){
+					Room.showMessage("The file \"" + path + "\" couldn't be found");
+					return;
+				}
+				File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".glsl", roomToToy(File.ReadAllText(path)));
+				break;
+				
+				case "webgl":
+				if(!File.Exists(path)){
+					Room.showMessage("The file \"" + path + "\" couldn't be found");
+					return;
+				}
+				File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".glsl", roomToWeb(File.ReadAllText(path)));
+				break;
+				
+				default:
+				Room.showMessage("The output format \"" + outputFormat + "\" is not supported");
+				break;
+			}
+			break;
+			
+			case "shadereditor":
+			switch(outputFormat){
+				case "fragroom":
+				if(!File.Exists(path)){
+					Room.showMessage("The file \"" + path + "\" couldn't be found");
+					return;
+				}
+				File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".fgrom", androidToRoom(File.ReadAllText(path)));
+				showPath = Path.GetFileNameWithoutExtension(uri.LocalPath) + ".fgrom";
+				break;
+				
+				default:
+				Room.showMessage("The output format \"" + outputFormat + "\" is not supported");
+				break;
+			}
+			break;
+			
+			case "shadertoy":
+			switch(outputFormat){
+				case "fragroom":
+				if(!File.Exists(path)){
+					ShaderDetails? sd = ShadertoyParser.fetchShader(path);
+					if(sd != null){
+						File.WriteAllText(((ShaderDetails)sd).name + ".fgrom", toyToRoom((ShaderDetails) sd));
+						showPath = ((ShaderDetails)sd).name + ".fgrom";
+					}else{
+						Room.showMessage("The file with path or Shadertoy shader with id \"" + path + "\" couldn't be found");
+						return;
+					}
+				}else{
+					File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".fgrom", toyToRoom(new ShaderDetails(null, File.ReadAllText(path), null, null)));
+					showPath = Path.GetFileNameWithoutExtension(uri.LocalPath) + ".fgrom";
+				}
+				break;
+				
+				default:
+				Room.showMessage("The output format \"" + outputFormat + "\" is not supported");
+				break;
+			}
+			break;
+			
+			default:
+			Room.showMessage("The input format \"" + inputFormat + "\" is not supported");
+			break;
+		}
+		
+		if(showPath != null){
+			using(Room ro = new Room(showPath)){
+				ro.Run();
+			}
+		}
+	}
+	
+	static string toyToRoom(ShaderDetails d){
 		string[] codeLines = d.code.Split(new string[]{"\r\n", "\n", "\r"}, StringSplitOptions.None);
 
 		Dictionary<string, Word> rep = new Dictionary<string, Word>{
@@ -80,7 +172,7 @@ static class Translator{
 			l.Add("    iTRANSLATOR_TR_Mouse = (iMouse / 2.0 + 0.5) * iResolution;");
 		}
 		l.Add("    vec4 TRANSLATOR_TR_fragColor;");
-		l.Add("    vec2 TRANSLATOR_TR_fragCoord = (fragCoord / 2.0 + 0.5) * iResolution;");
+		l.Add("    vec2 TRANSLATOR_TR_fragCoord = (fragCoord / 2.0 + 0.5) * (iResolution - 1.0) + 0.5;");
 		l.Add("    mainImage(TRANSLATOR_TR_fragColor, TRANSLATOR_TR_fragCoord);");
 		l.Add("    fragColor = TRANSLATOR_TR_fragColor;");
 		l.Add("}");
@@ -88,7 +180,7 @@ static class Translator{
 		return string.Join('\n', l.ToArray());
 	}
 
-	public static string roomToToy(string code){
+	static string roomToToy(string code){
 		string[] codeLines = code.Split(new string[]{"\r\n", "\n", "\r"}, StringSplitOptions.None);
 
 		Dictionary<string, Word> rep = new Dictionary<string, Word>{
@@ -149,7 +241,7 @@ static class Translator{
 		if(app.Contains("iMouse")){
 			l.Add("    iTRANSLATOR_RT_Mouse = (iMouse.xy / iResolution.xy) * 2.0 - 1.0;");
 		}
-		l.Add("    TRANSLATOR_RT_fragCoord = (fragCoord / iResolution.xy) * 2.0 - 1.0;");
+		l.Add("    TRANSLATOR_RT_fragCoord = ((fragCoord - 0.5) / (iResolution.xy - 1.0)) * 2.0 - 1.0;");
 		l.Add("    mainMethod();");
 		l.Add("    fragColor = TRANSLATOR_RT_fragColor;");
 		l.Add("}");
@@ -157,7 +249,7 @@ static class Translator{
 		return string.Join('\n', l.ToArray());
 	}
 	
-	public static string androidToRoom(string code){
+	static string androidToRoom(string code){
 		string[] codeLines = code.Split(new string[]{"\r\n", "\n", "\r"}, StringSplitOptions.None);
 
 		Dictionary<string, Word> rep = new Dictionary<string, Word>{
@@ -249,7 +341,7 @@ static class Translator{
 		return string.Join('\n', l.ToArray());
 	}
 	
-	public static string roomToAndroid(string code){
+	static string roomToAndroid(string code){
 		string[] codeLines = code.Split(new string[]{"\r\n", "\n", "\r"}, StringSplitOptions.None);
 
 		Dictionary<string, Word> rep = new Dictionary<string, Word>{

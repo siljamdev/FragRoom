@@ -15,7 +15,7 @@ using OpenTK.Windowing.Common.Input;
 using StbImageSharp;
 using AshLib;
 
-class Room : GameWindow{
+partial class Room : GameWindow{
 	
 	private int VAO;
 	private Shader mainShader; //We'll keep the shader class because why not Im too lazy
@@ -58,7 +58,7 @@ class Room : GameWindow{
 	private bool uniformTextures;
 	private bool uniformBackBuffer;
 	
-	public const string version = "v1.4.0";
+	public const string version = "v1.4.1";
 	
 	const string vertexShader = "#version 330 core\nlayout (location = 0) in vec2 aPos;out vec2 fragCoord;void main(){gl_Position = vec4(aPos, 0.0, 1.0); fragCoord = gl_Position.xy;}";
 	const string bufferFragmentShader = "#version 330 core\nout vec4 fragColor;in vec2 fragCoord;uniform sampler2D buffer;void main(){fragColor = texture(buffer, fragCoord / 2.0 + 0.5);}";
@@ -73,117 +73,56 @@ class Room : GameWindow{
 		this.filePath = s;
 	}
 	
-	public static void Main(string[] args){
+	public Room() : base(GameWindowSettings.Default, new NativeWindowSettings{StartVisible = false}){
+		this.Title = "FragRoom";
+    }
+	
+	public static void Main(string[] args){		
 		string path = null;
 		if(args.Length > 0){
 			switch(args[0]){
 				case "view": //view command
 				if(args.Length < 2){
+					showMessage("Not enough arguments");
 					return;
 				}
 				
 				path = removeQuotes(args[1]);
+				using(Room ro = new Room(path)){
+					ro.Run();
+				}
 				break;
 				
 				default: //view command
 				path = removeQuotes(args[0]);
+				using(Room ro = new Room(path)){
+					ro.Run();
+				}
 				break;
 				
 				case "translate": //translate command
 				if(args.Length < 4){
-					Console.WriteLine("Not enough arguments");
+					showMessage("Not enough arguments");
 					return;
 				}
 				
-				Uri uri = new Uri(Path.GetFullPath(args[3]));
+				Translator.handleTranslation(args[1], args[2], removeQuotes(args[3]));
+				break;
 				
-				switch(args[1]){
-					case "fragroom":
-					switch(args[2]){
-						case "shadereditor":
-						if(!File.Exists(args[3])){
-							Console.WriteLine("File does not exist");
-							return;
-						}
-						File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".glsl", Translator.roomToAndroid(File.ReadAllText(args[3])));
-						break;
-						
-						case "shadertoy":
-						if(!File.Exists(args[3])){
-							Console.WriteLine("File does not exist");
-							return;
-						}
-						File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".glsl", Translator.roomToToy(File.ReadAllText(args[3])));
-						break;
-						
-						case "webgl":
-						if(!File.Exists(args[3])){
-							Console.WriteLine("File does not exist");
-							return;
-						}
-						File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".glsl", Translator.roomToWeb(File.ReadAllText(args[3])));
-						break;
-						
-						default:
-						Console.WriteLine("Not supported output format");
-						break;
-					}
-					break;
-					
-					case "shadereditor":
-					switch(args[2]){
-						case "fragroom":
-						if(!File.Exists(args[3])){
-							Console.WriteLine("File does not exist");
-							return;
-						}
-						File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".fgrom", Translator.androidToRoom(File.ReadAllText(args[3])));
-						path = Path.GetFileNameWithoutExtension(uri.LocalPath) + ".fgrom";
-						break;
-						
-						default:
-						Console.WriteLine("Not supported output format");
-						break;
-					}
-					break;
-					
-					case "shadertoy":
-					switch(args[2]){
-						case "fragroom":
-						if(!File.Exists(args[3])){
-							ShaderDetails? sd = ShadertoyParser.fetchShader(args[3]);
-							if(sd != null){
-								File.WriteAllText(((ShaderDetails)sd).name + ".fgrom", Translator.toyToRoom((ShaderDetails) sd));
-								path = ((ShaderDetails)sd).name + ".fgrom";
-							}else{
-								Console.WriteLine("File does not exist, neither shadertoy shader");
-								return;
-							}
-						}else{
-							File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".fgrom", Translator.toyToRoom(new ShaderDetails(null, File.ReadAllText(args[3]), null, null)));
-							path = Path.GetFileNameWithoutExtension(uri.LocalPath) + ".fgrom";
-						}
-						break;
-						
-						default:
-						Console.WriteLine("Not supported output format");
-						break;
-					}
-					break;
-					
-					default:
-					Console.WriteLine("Not supported input format");
-					break;
+				case "web": //web
+				if(args.Length < 2){
+					showMessage("Not enough arguments");
+					return;
 				}
-				if(path != null){
-					break;
+				using(Room ro = new Room()){
+					ro.assembleWeb(removeQuotes(args[1]));
 				}
-				return;
+				break;
 			}
-		}
-		
-		using(Room ro = new Room(path)){
-			ro.Run();
+		}else{
+			using(Room ro = new Room(path)){
+				ro.Run();
+			}
 		}
 	}
 	
@@ -518,9 +457,12 @@ class Room : GameWindow{
 		textureA = GL.GenTexture();
 		GL.BindTexture(TextureTarget.Texture2D, textureA);
 		
-		GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
 		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int) TextureMinFilter.Nearest);
 		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int) TextureMagFilter.Nearest);
+		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int) TextureWrapMode.ClampToEdge);
+		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int) TextureWrapMode.ClampToEdge);
+		
+		GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
 		
 		GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, textureA, 0);
 		
@@ -534,9 +476,12 @@ class Room : GameWindow{
 		textureB = GL.GenTexture();
 		GL.BindTexture(TextureTarget.Texture2D, textureB);
 		
-		GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
 		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int) TextureMinFilter.Nearest);
 		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int) TextureMagFilter.Nearest);
+		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int) TextureWrapMode.ClampToEdge);
+		GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int) TextureWrapMode.ClampToEdge);
+		
+		GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, width, height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, IntPtr.Zero);
 		
 		GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, textureB, 0);
 		
