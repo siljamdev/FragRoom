@@ -128,7 +128,7 @@ partial class Room{
 		javaScript.AppendLine();
 		
 		javaScript.AppendLine("//Initialization");
-		javaScript.AppendLine("function initializeWebGL(){\n\tconst canvas = document.getElementById('glCanvas');\n\tconst gl = canvas.getContext('webgl2');\n\tif(!gl){\n\t\talert('WebGL2 not supported');\n\t\treturn;\n\t}\n\n\tgl.clearColor(0.0, 0.0, 0.0, 1.0);\n\n\tconst vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);\n\tconst fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);\n\tconst program = createProgram(gl, vertexShader, fragmentShader);\n\n\tcreateMesh(gl, program);\n\tgl.useProgram(program);");
+		javaScript.AppendLine("async function initializeWebGL(){\n\tconst canvas = document.getElementById('glCanvas');\n\tconst gl = canvas.getContext('webgl2');\n\tif(!gl){\n\t\talert('WebGL2 not supported');\n\t\treturn;\n\t}\n\n\tgl.clearColor(0.0, 0.0, 0.0, 1.0);\n\n\tconst vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);\n\tconst fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);\n\tconst program = createProgram(gl, vertexShader, fragmentShader);\n\n\tcreateMesh(gl, program);\n\tgl.useProgram(program);");
 		javaScript.AppendLine();
 		
 		if(uniformMouse){
@@ -166,7 +166,7 @@ partial class Room{
 			javaScript.AppendLine("\t//Textures");
 			for(int i = 0; i < textures.Length; i++){
 				if(textures[i] != null && File.Exists(textures[i].Substring(1))){
-					javaScript.Append("\tloadTexture(program, gl, ");
+					javaScript.Append("\tawait loadTexture(program, gl, ");
 					javaScript.Append(i);
 					javaScript.AppendLine(");");
 				}
