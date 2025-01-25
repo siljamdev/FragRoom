@@ -1,8 +1,8 @@
 #version 330 core
 
-//Translated using FragRoom version v1.4.1 - https://github.com/siljamdev/FragRoom
-//Parsed directly from Shadertoy. Author: Dumbelfo
-//https://www.shadertoy.com/view/X3KcW1
+//Translated using FragRoom version v1.4.2 - https://github.com/siljamdev/FragRoom
+//Parsed directly from Shadertoy. Author: siljam
+//https://www.shadertoy.com/view/X3Vfzz
 
 out vec4 fragColor;
 in vec2 fragCoord;
