@@ -1,7 +1,7 @@
 //This is a file that could work with shadertoy, translated with FragRoom
 //https://www.shadertoy.com/view/43VyW1
 
-//Translated using FragRoom version v1.4.1 - https://github.com/Dumbelfo08/FragRoom
+//Translated using FragRoom version v1.4.1 - https://github.com/siljamdev/FragRoom
 
 vec4 TRANSLATOR_RT_fragColor;
 vec2 TRANSLATOR_RT_fragCoord;

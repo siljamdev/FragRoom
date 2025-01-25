@@ -1,7 +1,7 @@
 #version 300 es
 
 //This shader would work on the android app Shader Editor
-//Translated using FragRoom version v1.4.1 - https://github.com/Dumbelfo08/FragRoom
+//Translated using FragRoom version v1.4.1 - https://github.com/siljamdev/FragRoom
 
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 precision highp float;

@@ -558,7 +558,7 @@ static class Translator{
 	}
 	
 	static string getTranslationMessage(){
-		return "//Translated using FragRoom version " + Room.version + " - https://github.com/Dumbelfo08/FragRoom";
+		return "//Translated using FragRoom version " + Room.version + " - https://github.com/siljamdev/FragRoom";
 	}
 	
 	static string[] divideLine(string s){

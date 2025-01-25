@@ -10,9 +10,12 @@
     <Authors>Dumbelfo</Authors>
     <Company>AshProject</Company>
 	<PackageDescription>Fragment shader test application</PackageDescription>
-	<RepositoryUrl>https://github.com/Dumbelfo08/FragRoom</RepositoryUrl>
+	<RepositoryUrl>https://github.com/siljamdev/FragRoom</RepositoryUrl>
 	
 	<ApplicationIcon>res/icon.ico</ApplicationIcon>
+	
+	<PublishSingleFile>true</PublishSingleFile>
+	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
 
   <ItemGroup>
