@@ -80,8 +80,8 @@ A *glsl* or *fgrom* file will be generated.
 The list of valid formats is:
 |Name|Description|
 |---|---|
-|shadertoy|The popular web page [Shadertoy](https://www.shadertoy.com/)|
-|shadereditor|The android app [Shader Editor](https://play.google.com/store/apps/details?id=de.markusfisch.android.shadereditor&pcampaignid=web_share)|
+|shadertoy|The popular web page [Shadertoy](https://www.shadertoy.com) |
+|shadereditor|The android app [Shader Editor](https://play.google.com/store/apps/details?id=de.markusfisch.android.shadereditor&pcampaignid=web_share) |
 |webgl|WebGL 2.0 compatible code|
 |fragroom|The format used by this very application|
 
@@ -89,7 +89,7 @@ Conversion between some formats might not be supported.
 
 When translating from Shadertoy, you can specify the id of the shader (http://www.shadertoy.com/view/XXXXXX) instead of having to download it.
 
-For example, the code of [this Shadertoy shader](https://www.shadertoy.com/view/43KczD) was translated using FragRoom.
+For example, the code of [this Shadertoy shader](https://www.shadertoy.com/view/lXyfzD) was translated using FragRoom.
 There are some examples [here](./examples/translations).
 
 ## Web feature
