@@ -115,7 +115,6 @@ partial class Room : GameWindow{
 					return;
 				}
 				using(Room ro = new Room()){
-					Directory.SetCurrentDirectory(Path.GetDirectoryName(removeQuotes(args[1])));
 					ro.assembleWeb(removeQuotes(args[1]));
 				}
 				break;
@@ -129,7 +128,6 @@ partial class Room : GameWindow{
 	
 	private void chooseFileName(){
 		if(filePath != null){
-			Directory.SetCurrentDirectory(Path.GetDirectoryName(filePath));
 			return;
 		}
 		
@@ -138,7 +136,6 @@ partial class Room : GameWindow{
 		}else if(File.Exists("fragment.glsl")){
 			filePath = "fragment.glsl";
 		}
-		Directory.SetCurrentDirectory(Path.GetDirectoryName(filePath));
 	}
 	
 	private string preprocess(){ //load the code and all the special properties
@@ -153,6 +150,10 @@ partial class Room : GameWindow{
 			this.uniformResolution = true;
 			showMessage("The file \"" + filePath + "\" couldn't be found");
 			return noFileShader;
+		}
+		
+		if(Path.GetDirectoryName(filePath) != ""){
+			Directory.SetCurrentDirectory(Path.GetDirectoryName(filePath));
 		}
 		
 		Uri uri = new Uri(Path.GetFullPath(filePath));
