@@ -58,7 +58,7 @@ partial class Room : GameWindow{
 	private bool uniformTextures;
 	private bool uniformBackBuffer;
 	
-	public const string version = "v1.4.2";
+	public const string version = "v1.4.3";
 	
 	const string vertexShader = "#version 330 core\nlayout (location = 0) in vec2 aPos;out vec2 fragCoord;void main(){gl_Position = vec4(aPos, 0.0, 1.0); fragCoord = gl_Position.xy;}";
 	const string bufferFragmentShader = "#version 330 core\nout vec4 fragColor;in vec2 fragCoord;uniform sampler2D buffer;void main(){fragColor = texture(buffer, fragCoord / 2.0 + 0.5);}";
@@ -77,7 +77,7 @@ partial class Room : GameWindow{
 		this.Title = "FragRoom";
     }
 	
-	public static void Main(string[] args){		
+	public static void Main(string[] args){	
 		string path = null;
 		if(args.Length > 0){
 			switch(args[0]){
@@ -115,6 +115,7 @@ partial class Room : GameWindow{
 					return;
 				}
 				using(Room ro = new Room()){
+					Directory.SetCurrentDirectory(Path.GetDirectoryName(removeQuotes(args[1])));
 					ro.assembleWeb(removeQuotes(args[1]));
 				}
 				break;
@@ -128,6 +129,7 @@ partial class Room : GameWindow{
 	
 	private void chooseFileName(){
 		if(filePath != null){
+			Directory.SetCurrentDirectory(Path.GetDirectoryName(filePath));
 			return;
 		}
 		
@@ -136,6 +138,7 @@ partial class Room : GameWindow{
 		}else if(File.Exists("fragment.glsl")){
 			filePath = "fragment.glsl";
 		}
+		Directory.SetCurrentDirectory(Path.GetDirectoryName(filePath));
 	}
 	
 	private string preprocess(){ //load the code and all the special properties
