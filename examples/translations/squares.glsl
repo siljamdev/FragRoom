@@ -1,7 +1,7 @@
 //This is a file that could work with shadertoy, translated with FragRoom
 //https://www.shadertoy.com/view/XXVfzz
 
-//Translated using FragRoom version v1.4.2 - https://github.com/siljamdev/FragRoom
+//Translated using FragRoom version v1.4.4 - https://github.com/siljamdev/FragRoom
 
 vec4 TRANSLATOR_RT_fragColor;
 vec2 TRANSLATOR_RT_fragCoord;
@@ -19,7 +19,7 @@ void mainMethod(){
     TRANSLATOR_RT_fragColor = vec4(col, 1.0); //output
 }
 void mainImage(out vec4 fragColor, in vec2 fragCoord){
-    TRANSLATOR_RT_fragCoord = ((fragCoord - 0.5) / (iResolution.xy - 1.0)) * 2.0 - 1.0;
+    TRANSLATOR_RT_fragCoord = (fragCoord / iResolution.xy) * 2.0 - 1.0;
     mainMethod();
     fragColor = TRANSLATOR_RT_fragColor;
 }
