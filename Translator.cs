@@ -172,7 +172,7 @@ static class Translator{
 			l.Add("    iTRANSLATOR_TR_Mouse = (iMouse / 2.0 + 0.5) * iResolution;");
 		}
 		l.Add("    vec4 TRANSLATOR_TR_fragColor;");
-		l.Add("    vec2 TRANSLATOR_TR_fragCoord = (fragCoord / 2.0 + 0.5) * (iResolution - 1.0) + 0.5;");
+		l.Add("    vec2 TRANSLATOR_TR_fragCoord = (fragCoord / 2.0 + 0.5) * iResolution;");
 		l.Add("    mainImage(TRANSLATOR_TR_fragColor, TRANSLATOR_TR_fragCoord);");
 		l.Add("    fragColor = TRANSLATOR_TR_fragColor;");
 		l.Add("}");
@@ -241,7 +241,7 @@ static class Translator{
 		if(app.Contains("iMouse")){
 			l.Add("    iTRANSLATOR_RT_Mouse = (iMouse.xy / iResolution.xy) * 2.0 - 1.0;");
 		}
-		l.Add("    TRANSLATOR_RT_fragCoord = ((fragCoord - 0.5) / (iResolution.xy - 1.0)) * 2.0 - 1.0;");
+		l.Add("    TRANSLATOR_RT_fragCoord = (fragCoord / iResolution.xy) * 2.0 - 1.0;");
 		l.Add("    mainMethod();");
 		l.Add("    fragColor = TRANSLATOR_RT_fragColor;");
 		l.Add("}");

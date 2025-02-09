@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	
-	<Version>1.4.3</Version>
+	<Version>1.4.4</Version>
     <Authors>siljam</Authors>
     <Company>AshProject</Company>
 	<PackageDescription>Fragment shader test application</PackageDescription>
@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AshLib" Version="2.1.0" />
+    <PackageReference Include="AshLib" Version="3.0.1" />
     <PackageReference Include="OpenTK" Version="4.8.2" />
     <PackageReference Include="StbImageSharp" Version="2.30.15" />
 	
