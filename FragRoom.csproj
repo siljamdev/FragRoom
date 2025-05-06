@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	
-	<Version>1.4.4</Version>
+	<Version>1.4.5</Version>
     <Authors>siljam</Authors>
     <Company>AshProject</Company>
 	<PackageDescription>Fragment shader test application</PackageDescription>
@@ -15,7 +15,12 @@
 	<ApplicationIcon>res/icon.ico</ApplicationIcon>
 	
 	<PublishSingleFile>true</PublishSingleFile>
+	<SelfContained>true</SelfContained>
 	<IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' Or '$(RuntimeIdentifier)' == 'win-x86' Or '$(RuntimeIdentifier)' == 'win-arm64'">
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

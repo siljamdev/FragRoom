@@ -1,12 +1,12 @@
 # FragRoom
-![Icon of the application](res/icon.png)
+<img src="res/icon.png" width="200"/>
 
 Application to run GLSL fragment shaders
 
 ## What is FragRoom?
 It is a small application that allows you to execute GLSL fragment shaders. These shaders are small programs that run once for every pixel. With them you can make stunning visuals and art.
 
-## How is it used?
+## Usage
 You open the files containing the raw GLSL code. They can also have additional options(Discussed later)
 You can directly open the files (**.fgrom** or **.glsl**) with the app, or directly execute the program and it will try to execute one of the following: *fragment.fgrom*, *fragment.glsl*.
 If the application can't find the specified file or any of the following, it will display a warning and a green/blue interrogation mark.
@@ -68,12 +68,15 @@ These are the special sequences for the title:
 
 You can find examples [here](./examples/title).
 
-## Translate feature
-When coding cool shaders, you often work in multiple places, each one with different formats and names for the names of the same things. With FragRoom, you can easily translate between those formats!
-There is support for translating from and to [Shadertoy](https://www.shadertoy.com/), [Shader Editor](https://play.google.com/store/apps/details?id=de.markusfisch.android.shadereditor&pcampaignid=web_share), and WebGL compatible code.
-To translate, you have to use the command line interface as:
+## CLI features
+There is a good CLI help menu available if you do `fragroom -h`.
 
-`FragRoom translate inputFormat outputFormat filePath`
+### Translate feature
+When coding cool shaders, you often work in multiple places, each one with different formats and names for the names of the same things. With FragRoom, you can easily translate between those formats!  
+There is support for translating from and to [Shadertoy](https://www.shadertoy.com/), [Shader Editor](https://play.google.com/store/apps/details?id=de.markusfisch.android.shadereditor&pcampaignid=web_share), and WebGL compatible code.  
+To translate, you have to use the CLI as:
+
+`fragroom translate <inputFormat> <outputFormat> <filePath>`
 
 A *glsl* or *fgrom* file will be generated.
 
@@ -92,12 +95,18 @@ When translating from Shadertoy, you can specify the id of the shader (http://ww
 For example, the code of [this Shadertoy shader](https://www.shadertoy.com/view/lXyfzD) was translated using FragRoom.
 There are some examples [here](./examples/translations).
 
-## Web feature
-You can transform FragRoom files into *html* files that contain everything needed for the shader to be executed in the browser, using WebGL2. It contains the textures, the shader code, and everything else needed.
-To transform it, you have to use the command line interface as:
+### Web feature
+You can transform FragRoom files into *html* files that contain everything needed for the shader to be executed in the browser, using WebGL2. It contains the textures, the shader code, and everything else needed.  
+To transform it, you have to use the CLI as:
 
-`FragRoom web filePath`
+`fragroom web <filePath>`
 
 An *html* file will be generated.
 
 There are some examples [here](./examples/web).
+
+## Tebas template
+There is a [Tebas project manager](https://github.com/siljamdev/Tebas) template available to more easily develop fragroom shaders. It is available to download [here](https://github.com/siljamdev/Tebas/blob/main/templates/Fragroom/fgrom.tbtem)
+
+## License
+This software is licensed under the [MIT License](https://github.com/siljamdev/Fragroom/blob/main/LICENSE).

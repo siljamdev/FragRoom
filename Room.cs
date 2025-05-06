@@ -58,7 +58,7 @@ partial class Room : GameWindow{
 	private bool uniformTextures;
 	private bool uniformBackBuffer;
 	
-	public const string version = "v1.4.4";
+	public const string version = "v1.4.5";
 	
 	const string vertexShader = "#version 330 core\nlayout (location = 0) in vec2 aPos;out vec2 fragCoord;void main(){gl_Position = vec4(aPos, 0.0, 1.0); fragCoord = gl_Position.xy;}";
 	const string bufferFragmentShader = "#version 330 core\nout vec4 fragColor;in vec2 fragCoord;uniform sampler2D buffer;void main(){fragColor = texture(buffer, fragCoord / 2.0 + 0.5);}";
@@ -84,6 +84,7 @@ partial class Room : GameWindow{
 				case "view": //view command
 				if(args.Length < 2){
 					showMessage("Not enough arguments");
+					//Console.Error.WriteLine("Not enough arguments");
 					return;
 				}
 				
@@ -103,6 +104,7 @@ partial class Room : GameWindow{
 				case "translate": //translate command
 				if(args.Length < 4){
 					showMessage("Not enough arguments");
+					//Console.Error.WriteLine("Not enough arguments");
 					return;
 				}
 				
@@ -112,11 +114,18 @@ partial class Room : GameWindow{
 				case "web": //web
 				if(args.Length < 2){
 					showMessage("Not enough arguments");
+					//Console.Error.WriteLine("Not enough arguments");
 					return;
 				}
 				using(Room ro = new Room()){
 					ro.assembleWeb(removeQuotes(args[1]));
 				}
+				break;
+				
+				case "help":
+				case "-h":
+				case "--help":
+				showMessage("Fragroom " + version + "\n\nUsage:\n  fragroom <option> [arguments]\nOptions:\n  help                                                 Displays this menu\n  view <filePath>                                      Default behaviour, renders the file\n  translate <inputFormat> <outputFormat> <filePath>    Transalates from one format to another. Valid formats are: shadertoy, shadereditor, webgl, fragroom. Shadertoy input fomat may use the shader id as input path\n  web <filePath>                                       Generates a .html file that executes the shader with the use of webgl.\n  <filePath>                                           Same as view");
 				break;
 			}
 		}else{
@@ -709,11 +718,16 @@ partial class Room : GameWindow{
 		return p;
 	}
 	
+	#if WINDOWS
 	[DllImport("user32.dll", CharSet = CharSet.Unicode)]
     private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
-
-    public static void showMessage(string message)
-    {
+	#endif
+	
+    public static void showMessage(string message){
+		#if WINDOWS
         new Thread(() => MessageBox(IntPtr.Zero, message, "Error", 0x00000030)).Start();
+		#else
+		Console.WriteLine(message);
+		#endif
     }
 }
