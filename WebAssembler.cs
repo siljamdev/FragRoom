@@ -7,7 +7,7 @@ partial class Room{
 	
 	private void assembleWeb(string fpath){
 		if(!File.Exists(fpath)){
-			showMessage("The file \"" + fpath + "\" couldn't be found");
+			Console.Error.WriteLine("The file \"" + fpath + "\" couldn't be found");
 			return;
 		}
 		filePath = fpath;
@@ -17,9 +17,9 @@ partial class Room{
 		try{
 			mainShader = new Shader(vertexShader, shaderCode, null);
 		} catch(Exception e){
-			Console.WriteLine("Exception caught!");
-			Console.WriteLine(e);
-			showMessage("EXCEPTION caught:\n" + e);
+			//Console.WriteLine("Exception caught!");
+			//Console.WriteLine(e);
+			Console.Error.WriteLine("EXCEPTION caught:\n" + e);
 			return;
 		}
 		

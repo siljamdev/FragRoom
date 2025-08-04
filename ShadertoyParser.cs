@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 class ShadertoyParser{
-    const string apiKey = "Nt8lR1"; // Replace with your API key
+    const string apiKey = "Nt8lR1";
 
     public static ShaderDetails? fetchShader(string id){
         using (HttpClient client = new HttpClient()){
@@ -25,7 +25,7 @@ class ShadertoyParser{
 
                 return new ShaderDetails(name, code, author, link);
             }catch (Exception e){
-                Console.WriteLine(e);
+                Console.Error.WriteLine(e);
 				return null;
             }
         }

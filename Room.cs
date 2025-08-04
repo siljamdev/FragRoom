@@ -58,7 +58,7 @@ partial class Room : GameWindow{
 	private bool uniformTextures;
 	private bool uniformBackBuffer;
 	
-	public const string version = "v1.4.5";
+	public const string version = "v1.4.6";
 	
 	const string vertexShader = "#version 330 core\nlayout (location = 0) in vec2 aPos;out vec2 fragCoord;void main(){gl_Position = vec4(aPos, 0.0, 1.0); fragCoord = gl_Position.xy;}";
 	const string bufferFragmentShader = "#version 330 core\nout vec4 fragColor;in vec2 fragCoord;uniform sampler2D buffer;void main(){fragColor = texture(buffer, fragCoord / 2.0 + 0.5);}";
@@ -77,14 +77,20 @@ partial class Room : GameWindow{
 		this.Title = "FragRoom";
     }
 	
-	public static void Main(string[] args){	
+	public static void Main(string[] args){
+		#if WINDOWS
+			if(GetConsoleWindow() == IntPtr.Zero){
+				AttachConsole(ATTACH_PARENT_PROCESS);
+			}
+		#endif
+		
 		string path = null;
 		if(args.Length > 0){
 			switch(args[0]){
 				case "view": //view command
 				if(args.Length < 2){
-					showMessage("Not enough arguments");
-					//Console.Error.WriteLine("Not enough arguments");
+					//showMessage("Not enough arguments");
+					Console.Error.WriteLine("Not enough arguments");
 					return;
 				}
 				
@@ -103,8 +109,8 @@ partial class Room : GameWindow{
 				
 				case "translate": //translate command
 				if(args.Length < 4){
-					showMessage("Not enough arguments");
-					//Console.Error.WriteLine("Not enough arguments");
+					//showMessage("Not enough arguments");
+					Console.Error.WriteLine("Not enough arguments");
 					return;
 				}
 				
@@ -113,8 +119,8 @@ partial class Room : GameWindow{
 				
 				case "web": //web
 				if(args.Length < 2){
-					showMessage("Not enough arguments");
-					//Console.Error.WriteLine("Not enough arguments");
+					//showMessage("Not enough arguments");
+					Console.Error.WriteLine("Not enough arguments");
 					return;
 				}
 				using(Room ro = new Room()){
@@ -125,7 +131,8 @@ partial class Room : GameWindow{
 				case "help":
 				case "-h":
 				case "--help":
-				showMessage("Fragroom " + version + "\n\nUsage:\n  fragroom <option> [arguments]\nOptions:\n  help                                                 Displays this menu\n  view <filePath>                                      Default behaviour, renders the file\n  translate <inputFormat> <outputFormat> <filePath>    Transalates from one format to another. Valid formats are: shadertoy, shadereditor, webgl, fragroom. Shadertoy input fomat may use the shader id as input path\n  web <filePath>                                       Generates a .html file that executes the shader with the use of webgl.\n  <filePath>                                           Same as view");
+				//showMessage("Fragroom " + version + "\n\nUsage:\n  fragroom <option> [arguments]\nOptions:\n  help                                                 Displays this menu\n  view <filePath>                                      Default behaviour, renders the file\n  translate <inputFormat> <outputFormat> <filePath>    Transalates from one format to another. Valid formats are: shadertoy, shadereditor, webgl, fragroom. Shadertoy input fomat may use the shader id as input path\n  web <filePath>                                       Generates a .html file that executes the shader with the use of webgl.\n  <filePath>                                           Same as view");
+				Console.WriteLine("Fragroom " + version + "\n\nUsage:\n  fragroom <option> [arguments]\nOptions:\n  help                                                 Displays this menu\n  view <filePath>                                      Default behaviour, renders the file\n  translate <inputFormat> <outputFormat> <filePath>    Transalates from one format to another. Valid formats are: shadertoy, shadereditor, webgl, fragroom. Shadertoy input fomat may use the shader id as input path\n  web <filePath>                                       Generates a .html file that executes the shader with the use of webgl.\n  <filePath>                                           Same as view");
 				break;
 			}
 		}else{
@@ -150,14 +157,15 @@ partial class Room : GameWindow{
 	private string preprocess(){ //load the code and all the special properties
 		chooseFileName();
 		if(!File.Exists(filePath)){
-			Console.WriteLine("File not found!");
-			Console.WriteLine("Path: " + filePath);
+			//Console.WriteLine("File not found!");
+			//Console.WriteLine("Path: " + filePath);
 			
 			this.Title = "FragRoom - File not found";
 			secondsToClose = 15;
 			this.uniformTime = true;
 			this.uniformResolution = true;
 			showMessage("The file \"" + filePath + "\" couldn't be found");
+			Console.Error.WriteLine("The file \"" + filePath + "\" couldn't be found");
 			return noFileShader;
 		}
 		
@@ -452,6 +460,7 @@ partial class Room : GameWindow{
 		if (image == null || image.Data == null){
 			Console.WriteLine("Failed to load icon");
 			showMessage("Failed to load the icon");
+			Console.Error.WriteLine("Failed to load the icon");
 			return;
 		}
 		
@@ -479,7 +488,7 @@ partial class Room : GameWindow{
 		
 		GL.FramebufferTexture2D(FramebufferTarget.Framebuffer, FramebufferAttachment.ColorAttachment0, TextureTarget.Texture2D, textureA, 0);
 		
-		if (GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != FramebufferErrorCode.FramebufferComplete){
+		if(GL.CheckFramebufferStatus(FramebufferTarget.Framebuffer) != FramebufferErrorCode.FramebufferComplete){
 			throw new Exception("Framebuffer A is not complete!");
 		}
 		
@@ -520,8 +529,8 @@ partial class Room : GameWindow{
 		try{
 			mainShader = new Shader(vertexShader, shaderCode, null);
 		} catch(Exception e){
-			Console.WriteLine("Exception caught!");
-			Console.WriteLine(e);
+			//Console.WriteLine("Exception caught!");
+			//Console.WriteLine(e);
 			
 			mainShader = new Shader(vertexShader, warningShader, null);
 			this.uniformTime = true;
@@ -529,6 +538,7 @@ partial class Room : GameWindow{
 			this.Title = "FragRoom - Warning! Error in shader";
 			secondsToClose = 15;
 			showMessage("EXCEPTION caught:\n" + e);
+			Console.Error.WriteLine("EXCEPTION caught:\n" + e);
 		}
 		
 		//create mesh
@@ -721,6 +731,13 @@ partial class Room : GameWindow{
 	#if WINDOWS
 	[DllImport("user32.dll", CharSet = CharSet.Unicode)]
     private static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
+	
+	[DllImport("kernel32.dll")]
+    static extern bool AttachConsole(int dwProcessId);
+    const int ATTACH_PARENT_PROCESS = -1;
+
+    [DllImport("kernel32.dll")]
+    static extern IntPtr GetConsoleWindow();
 	#endif
 	
     public static void showMessage(string message){

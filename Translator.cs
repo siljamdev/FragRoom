@@ -13,7 +13,7 @@ static class Translator{
 			switch(outputFormat){
 				case "shadereditor":
 				if(!File.Exists(path)){
-					Room.showMessage("The file \"" + path + "\" couldn't be found");
+					Console.Error.WriteLine("The file \"" + path + "\" couldn't be found");
 					return;
 				}
 				File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".glsl", roomToAndroid(File.ReadAllText(path)));
@@ -21,7 +21,7 @@ static class Translator{
 				
 				case "shadertoy":
 				if(!File.Exists(path)){
-					Room.showMessage("The file \"" + path + "\" couldn't be found");
+					Console.Error.WriteLine("The file \"" + path + "\" couldn't be found");
 					return;
 				}
 				File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".glsl", roomToToy(File.ReadAllText(path)));
@@ -29,14 +29,14 @@ static class Translator{
 				
 				case "webgl":
 				if(!File.Exists(path)){
-					Room.showMessage("The file \"" + path + "\" couldn't be found");
+					Console.Error.WriteLine("The file \"" + path + "\" couldn't be found");
 					return;
 				}
 				File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".glsl", roomToWeb(File.ReadAllText(path)));
 				break;
 				
 				default:
-				Room.showMessage("The output format \"" + outputFormat + "\" is not supported");
+				Console.Error.WriteLine("The output format \"" + outputFormat + "\" is not supported");
 				break;
 			}
 			break;
@@ -45,7 +45,7 @@ static class Translator{
 			switch(outputFormat){
 				case "fragroom":
 				if(!File.Exists(path)){
-					Room.showMessage("The file \"" + path + "\" couldn't be found");
+					Console.Error.WriteLine("The file \"" + path + "\" couldn't be found");
 					return;
 				}
 				File.WriteAllText(Path.GetFileNameWithoutExtension(uri.LocalPath) + ".fgrom", androidToRoom(File.ReadAllText(path)));
@@ -53,7 +53,7 @@ static class Translator{
 				break;
 				
 				default:
-				Room.showMessage("The output format \"" + outputFormat + "\" is not supported");
+				Console.Error.WriteLine("The output format \"" + outputFormat + "\" is not supported");
 				break;
 			}
 			break;
@@ -67,7 +67,7 @@ static class Translator{
 						File.WriteAllText(((ShaderDetails)sd).name + ".fgrom", toyToRoom((ShaderDetails) sd));
 						showPath = ((ShaderDetails)sd).name + ".fgrom";
 					}else{
-						Room.showMessage("The file with path or Shadertoy shader with id \"" + path + "\" couldn't be found");
+						Console.Error.WriteLine("The file with path or Shadertoy shader with id \"" + path + "\" couldn't be found");
 						return;
 					}
 				}else{
@@ -77,13 +77,13 @@ static class Translator{
 				break;
 				
 				default:
-				Room.showMessage("The output format \"" + outputFormat + "\" is not supported");
+				Console.Error.WriteLine("The output format \"" + outputFormat + "\" is not supported");
 				break;
 			}
 			break;
 			
 			default:
-			Room.showMessage("The input format \"" + inputFormat + "\" is not supported");
+			Console.Error.WriteLine("The input format \"" + inputFormat + "\" is not supported");
 			break;
 		}
 		
