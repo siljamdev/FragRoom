@@ -6,10 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	
-	<Version>1.4.6</Version>
+	<Version>1.4.7</Version>
     <Authors>siljam</Authors>
     <Company>AshProject</Company>
-	<PackageDescription>Fragment shader test application</PackageDescription>
+	<PackageDescription>Fragment shader application</PackageDescription>
 	<RepositoryUrl>https://github.com/siljamdev/FragRoom</RepositoryUrl>
 	
 	<ApplicationIcon>res/icon.ico</ApplicationIcon>
@@ -24,8 +24,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AshLib" Version="3.0.1" />
-    <PackageReference Include="OpenTK" Version="4.8.2" />
+    <PackageReference Include="AshLib" Version="3.5.0" />
+    <PackageReference Include="OpenTK" Version="4.9.4" />
     <PackageReference Include="StbImageSharp" Version="2.30.15" />
 	
 	<EmbeddedResource Include="res/icon.png" />
