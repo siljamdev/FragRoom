@@ -59,7 +59,7 @@ These are all the options:
 You can find examples [here](./examples/options).
 
 These are the special sequences for the title:
-|Option|Value|
+|Sequence|Value|
 |---:|:---|
 |%p|The full path of the shader file|
 |%f|Name of the shader file, with extension|
@@ -109,4 +109,4 @@ There are some examples [here](./examples/web).
 There is a [Tebas project manager](https://github.com/siljamdev/Tebas) template available to more easily develop fragroom shaders. It is available to download [here](https://github.com/siljamdev/Tebas/blob/main/templates/Fragroom/fgrom.tbtem)
 
 ## License
-This software is licensed under the [MIT License](https://github.com/siljamdev/Fragroom/blob/main/LICENSE).
+This software is licensed under the [MIT License](./LICENSE).
